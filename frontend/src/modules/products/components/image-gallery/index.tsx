@@ -237,7 +237,7 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
           </div>
 
           {/* Mobile View: visible on screen < lg */}
-          <div className="block lg:hidden relative w-full overflow-hidden px-6">
+          <div className="block lg:hidden relative w-full overflow-hidden px-3">
             <div
               ref={mobileScrollRef}
               onScroll={handleMobileScroll}
@@ -312,7 +312,7 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
                   role="tab"
                   aria-selected={isActive}
                   onClick={() => handleThumbnailClick(i)}
-                  className={`relative shrink-0 w-10 h-10 md:w-16 md:h-16 rounded-[var(--radius-card)] overflow-hidden bg-surface transition-all duration-200 ${
+                  className={`relative shrink-0 w-10 h-10 md:w-16 md:h-16 rounded-none overflow-hidden bg-surface transition-all duration-200 ${
                     isActive
                       ? "ring-2 ring-primary"
                       : "ring-1 ring-line/50 opacity-60 hover:opacity-100"
@@ -392,7 +392,7 @@ function GalleryArrows({
   onChange: (i: number) => void
 }) {
   return (
-    <div className="lg:hidden absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between -mx-5 pointer-events-none z-20">
+    <div className="lg:hidden absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-2 pointer-events-none z-20">
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onChange((activeIndex - 1 + total) % total) }}

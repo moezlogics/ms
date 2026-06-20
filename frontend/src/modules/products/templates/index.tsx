@@ -122,7 +122,9 @@ const ProductTemplate = async ({
     product.variants?.[0]?.calculated_price?.currency_code ||
     region.currency_code
 
-  const [stats, brand, reviews, bundles, altMap, specTemplateResult, settings] =
+  const primaryCategory = product.categories?.[0]
+
+  const [stats, brand, reviews, bundles, altMap, specTemplateResult, settings, allProductsResult] =
     await Promise.all([
       getProductReviewStats(product.id).catch(() => null),
       getBrandForProduct(product.id).catch(() => null),
@@ -147,15 +149,33 @@ const ProductTemplate = async ({
         (product.categories || []).map((c: any) => c?.id)
       ).catch(() => ({ template: null, source_name: null })),
       getSiteSettings().catch(() => ({})),
+      listProducts({
+        queryParams: {
+          limit: 24,
+          ...(primaryCategory?.id ? { category_id: [primaryCategory.id] } : {}),
+        } as any,
+        countryCode,
+      }).catch(() => ({ response: { products: [] } })),
     ])
 
   const aspectRatioClass = resolveProductCardAspectClass(settings || {})
 
-  const allProductsResult = await listProducts({
-    queryParams: { limit: 100 } as any,
-    countryCode,
-  }).catch(() => ({ response: { products: [] } }))
-  const allProducts = allProductsResult.response.products || []
+  let allProducts: any[] = allProductsResult.response.products || []
+
+  // Fallback: if category has very few products, fetch from general store to ensure recommendations are rendered (cap at 24 to keep TTFB fast)
+  if (allProducts.length < 5) {
+    const backupResult = await listProducts({
+      queryParams: { limit: 24 } as any,
+      countryCode,
+    }).catch(() => ({ response: { products: [] } }))
+    const backupProducts = backupResult.response.products || []
+    const seen = new Set(allProducts.map((p) => p.id))
+    for (const p of backupProducts) {
+      if (!seen.has(p.id)) {
+        allProducts.push(p)
+      }
+    }
+  }
 
   const similarBudget = getSimilarBudgetProducts(product, allProducts, 4)
   const similarSpecs = getSimilarSpecsProducts(product, allProducts, 4)
