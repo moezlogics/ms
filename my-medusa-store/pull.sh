@@ -17,12 +17,4 @@ rsync -av --delete \
   --exclude='logs/' \
   .deploy-source/my-medusa-store/ .
 
-echo "=== Running Deploy script ==="
-if [ -f "./deploy-backend.sh" ]; then
-  chmod +x ./deploy-backend.sh
-  ./deploy-backend.sh
-else
-  echo "No deploy-backend.sh found. Please build manually or restart PM2."
-fi
-
 echo "=== Backend Updated Successfully ==="

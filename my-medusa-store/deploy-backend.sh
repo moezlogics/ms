@@ -53,7 +53,7 @@ echo "[5/7] Running database migrations..."
 if [ -f "$ACTIVE_DIR/.env" ] && [ ! -f ".env" ]; then
   cp "$ACTIVE_DIR/.env" ".env"
 fi
-npx medusa db:migrate
+# npx medusa db:migrate
 
 # 6. Swap the builds atomically
 echo "[6/7] Build successful! Swapping compiled server files in active directory..."
