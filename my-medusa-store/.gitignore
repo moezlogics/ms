@@ -9,3 +9,4 @@ medusa-db.sql
 .DS_Store
 .idea/
 .vscode/
+admin-static/

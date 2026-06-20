@@ -10,6 +10,7 @@ rsync -av --delete \
   --exclude='.git/' \
   --exclude='.env' \
   --exclude='pull.sh' \
+  --exclude='admin-static/' \
   --exclude='node_modules/' \
   --exclude='dist/' \
   --exclude='ecosystem.config.js' \
