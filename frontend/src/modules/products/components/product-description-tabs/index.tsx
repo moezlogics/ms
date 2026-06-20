@@ -43,6 +43,9 @@ type Props = {
    * grouping for legacy products.
    */
   template?: SpecTemplate | null
+  similarBudgetSlot?: React.ReactNode
+  similarSpecsSlot?: React.ReactNode
+  sameBrandSlot?: React.ReactNode
 }
 
 /**
@@ -75,6 +78,9 @@ export default function ProductDescriptionTabs({
   reviewsSlot,
   reviewCount,
   template,
+  similarBudgetSlot,
+  similarSpecsSlot,
+  sameBrandSlot,
 }: Props) {
   // English content priority: explicit `_en` > legacy `richDescription` >
   // plainDescription. We store all three because the legacy field may be
@@ -278,7 +284,14 @@ export default function ProductDescriptionTabs({
         {active === "specs" && hasSpecs && (
           <div className="pt-2 pb-4">
             <h2 className="sr-only">Product Specifications</h2>
-            <SpecSheet specs={specs} inTheBox={inTheBox} template={template} />
+            <SpecSheet
+              specs={specs}
+              inTheBox={inTheBox}
+              template={template}
+              similarBudgetSlot={similarBudgetSlot}
+              similarSpecsSlot={similarSpecsSlot}
+              sameBrandSlot={sameBrandSlot}
+            />
           </div>
         )}
 

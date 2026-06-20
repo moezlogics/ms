@@ -4,9 +4,10 @@ import ImageGallery from "@modules/products/components/image-gallery"
 import ProductActions from "@modules/products/components/product-actions"
 import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
 import ProductTabs from "@modules/products/components/product-tabs"
-import RelatedProducts from "@modules/products/components/related-products"
+import ProductPreview from "@modules/products/components/product-preview"
 import ProductInfo from "@modules/products/templates/product-info"
-import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
+import { listProducts } from "@lib/data/products"
+import { getSimilarBudgetProducts, getSimilarSpecsProducts, getSameBrandProducts } from "@lib/util/product"
 import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 import { getBaseURL } from "@lib/util/env"
@@ -149,6 +150,40 @@ const ProductTemplate = async ({
     ])
 
   const aspectRatioClass = resolveProductCardAspectClass(settings || {})
+
+  const allProductsResult = await listProducts({
+    queryParams: { limit: 100 } as any,
+    countryCode,
+  }).catch(() => ({ response: { products: [] } }))
+  const allProducts = allProductsResult.response.products || []
+
+  const similarBudget = getSimilarBudgetProducts(product, allProducts, 4)
+  const similarSpecs = getSimilarSpecsProducts(product, allProducts, 4)
+  const sameBrand = getSameBrandProducts(product, allProducts, brand?.handle, 4)
+
+  const renderInlineSection = (title: string, productsList: any[], iconClass: string) => {
+    if (!productsList || productsList.length === 0) return null
+
+    return (
+      <div className="flex flex-col gap-3 my-4">
+        <div className="flex items-center gap-2 border-b border-line pb-1.5">
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-black text-white shrink-0 shadow-sm">
+            <i className={`ph-bold ${iconClass} text-[13px]`} aria-hidden />
+          </span>
+          <h4 className="text-[12.5px] md:text-[13px] font-extrabold text-black uppercase tracking-wider">
+            {title}
+          </h4>
+        </div>
+        <ul className="grid grid-cols-4 gap-2 md:gap-4">
+          {productsList.map((p) => (
+            <li key={p.id}>
+              <ProductPreview region={region} product={p} aspectClass={aspectRatioClass} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
 
   // First variant carries the canonical SKU / barcode / dimensions.
   // Medusa exposes weight (g), length / width / height (cm) natively
@@ -502,6 +537,9 @@ const ProductTemplate = async ({
           reviewsSlot={
             <ProductReviews productId={product.id} productTitle={product.title} />
           }
+          similarBudgetSlot={renderInlineSection("Similar Budget Mobiles", similarBudget, "ph-hand-coins")}
+          similarSpecsSlot={renderInlineSection("Similar Specifications", similarSpecs, "ph-cpu")}
+          sameBrandSlot={renderInlineSection(`More from ${brand?.name || "Brand"}`, sameBrand, "ph-device-mobile")}
         />
       </div>
 
@@ -509,15 +547,6 @@ const ProductTemplate = async ({
       <Suspense fallback={null}>
         <FrequentlyBoughtTogether product={product} countryCode={countryCode} />
       </Suspense>
-
-      <div
-        className="container-anvogue my-8 md:my-12"
-        data-testid="related-products-container"
-      >
-        <Suspense fallback={<SkeletonRelatedProducts />}>
-          <RelatedProducts product={product} countryCode={countryCode} />
-        </Suspense>
-      </div>
     </>
   )
 }

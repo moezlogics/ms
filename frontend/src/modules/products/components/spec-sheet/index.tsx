@@ -1,3 +1,4 @@
+import React from "react"
 import { buildSpecGroups } from "@lib/util/spec-groups"
 import {
   SpecTemplate,
@@ -26,6 +27,9 @@ type Props = {
    * legacy products that have no template.
    */
   template?: SpecTemplate | null
+  similarBudgetSlot?: React.ReactNode
+  similarSpecsSlot?: React.ReactNode
+  sameBrandSlot?: React.ReactNode
 }
 
 /**
@@ -69,7 +73,15 @@ function parseInTheBox(raw: any): string[] {
  * contents — caller can safely include this in the tab list and rely
  * on it to vanish for non-electronics products.
  */
-export default function SpecSheet({ specs, inTheBox, title, template }: Props) {
+export default function SpecSheet({
+  specs,
+  inTheBox,
+  title,
+  template,
+  similarBudgetSlot,
+  similarSpecsSlot,
+  sameBrandSlot,
+}: Props) {
   // When the product's category provides a structured spec template,
   // honor the admin's group ordering, labels, and units. Otherwise
   // fall back to the heuristic key-name classifier so legacy products
@@ -81,6 +93,20 @@ export default function SpecSheet({ specs, inTheBox, title, template }: Props) {
 
   if (!groups.length && !boxItems.length) return null
 
+  // Determine indices at which inline slots will be rendered.
+  // Price similarity / Similar Budget -> after 1st table (idx === 0)
+  // Spec similarity -> after 3rd table (idx === 2, or last group index if length <= 2)
+  // Brand similarity -> after 5th table (idx === 4, or last group index if length <= 4)
+  let budgetIndex = -1
+  let specsIndex = -1
+  let brandIndex = -1
+
+  if (groups.length > 0) {
+    budgetIndex = 0
+    specsIndex = groups.length > 2 ? 2 : groups.length - 1
+    brandIndex = groups.length > 4 ? 4 : groups.length - 1
+  }
+
   return (
     <div className="flex flex-col gap-5 md:gap-6">
       {title && (
@@ -89,11 +115,12 @@ export default function SpecSheet({ specs, inTheBox, title, template }: Props) {
 
       {groups.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-          {groups.map((g) => (
-            <section
-              key={g.name}
-              className="flex flex-col border border-line/50 rounded-xl overflow-hidden bg-surface/5"
-            >
+          {groups.map((g, idx) => (
+            <React.Fragment key={g.name}>
+              <section
+                className="flex flex-col border border-line/50 rounded-xl overflow-hidden bg-surface/5"
+              >
+
               {/* Group header */}
               <div className="flex items-center gap-2 px-2.5 py-1.5 md:px-3.5 md:py-2 bg-surface/40 border-b border-line/55">
                 <span className="inline-flex items-center justify-center w-6.5 h-6.5 rounded bg-black text-white shrink-0 shadow-sm">
@@ -122,9 +149,28 @@ export default function SpecSheet({ specs, inTheBox, title, template }: Props) {
                 ))}
               </dl>
             </section>
-          ))}
-        </div>
-      )}
+
+            {idx === budgetIndex && similarBudgetSlot && (
+              <div className="col-span-1 md:col-span-2 my-2">
+                {similarBudgetSlot}
+              </div>
+            )}
+
+            {idx === specsIndex && similarSpecsSlot && (
+              <div className="col-span-1 md:col-span-2 my-2">
+                {similarSpecsSlot}
+              </div>
+            )}
+
+            {idx === brandIndex && sameBrandSlot && (
+              <div className="col-span-1 md:col-span-2 my-2">
+                {sameBrandSlot}
+              </div>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    )}
 
       {boxItems.length > 0 && (
         <section className="flex flex-col border border-line/50 rounded-xl overflow-hidden bg-surface/5">
