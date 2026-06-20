@@ -84,7 +84,7 @@ export default function SpecSheet({ specs, inTheBox, title, template }: Props) {
   return (
     <div className="flex flex-col gap-5 md:gap-6">
       {title && (
-        <h2 className="text-base md:text-lg font-bold text-ink">{title}</h2>
+        <h2 className="text-base md:text-lg font-extrabold text-black">{title}</h2>
       )}
 
       {groups.length > 0 && (
@@ -99,7 +99,7 @@ export default function SpecSheet({ specs, inTheBox, title, template }: Props) {
                 <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-primary/10 text-primary shrink-0">
                   <i className={`ph-fill ${g.icon} text-[13px]`} aria-hidden />
                 </span>
-                <h3 className="text-[12.5px] md:text-[13px] font-bold text-ink tracking-wide uppercase">
+                <h3 className="text-[12.5px] md:text-[13px] font-extrabold text-black tracking-wide uppercase">
                   {g.name}
                 </h3>
               </div>
@@ -110,12 +110,12 @@ export default function SpecSheet({ specs, inTheBox, title, template }: Props) {
                   <div
                     key={r.key}
                     id={`spec-row-${r.key}`}
-                    className="flex flex-row items-start gap-3 md:gap-4 px-2.5 py-2 md:px-3.5 md:py-2 border-b border-line/20 last:border-b-0 hover:bg-surface/10 transition-colors scroll-mt-24"
+                    className="flex flex-row items-start gap-3 md:gap-4 px-2.5 py-1.5 md:px-3.5 md:py-1.5 border-b border-line/20 last:border-b-0 hover:bg-surface/10 transition-colors scroll-mt-24"
                   >
-                    <dt className="w-[90px] md:w-[130px] shrink-0 text-[10px] md:text-[11px] text-ink/60 font-semibold uppercase tracking-wider mt-0.5">
+                    <dt className="w-[90px] md:w-[130px] shrink-0 text-[10px] md:text-[11px] text-black font-bold uppercase tracking-wider mt-0.5">
                       {r.label}
                     </dt>
-                    <dd className="text-[11.5px] small:text-[12px] md:text-[13px] text-ink/85 font-medium text-left flex-1 min-w-0 break-words">
+                    <dd className="text-[12.5px] md:text-[13.5px] text-black font-semibold text-left flex-1 min-w-0 break-words">
                       {r.value}
                     </dd>
                   </div>
@@ -133,7 +133,7 @@ export default function SpecSheet({ specs, inTheBox, title, template }: Props) {
             <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-primary/10 text-primary shrink-0">
               <i className="ph-fill ph-package text-[13px]" aria-hidden />
             </span>
-            <h3 className="text-[12.5px] md:text-[13px] font-bold text-ink tracking-wide uppercase">
+            <h3 className="text-[12.5px] md:text-[13px] font-extrabold text-black tracking-wide uppercase">
               What&apos;s in the Box
             </h3>
           </div>
@@ -141,7 +141,7 @@ export default function SpecSheet({ specs, inTheBox, title, template }: Props) {
             {boxItems.map((item, i) => (
               <li
                 key={i}
-                className="flex items-start gap-2 text-[13px] md:text-[13px] text-ink/80"
+                className="flex items-start gap-2 text-[13px] md:text-[14px] text-black font-medium"
               >
                 <i
                   className="ph-fill ph-check-circle text-success text-[15px] shrink-0 mt-0.5"

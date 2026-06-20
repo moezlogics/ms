@@ -10,6 +10,7 @@ import Nav from "@modules/layout/templates/nav"
 import MobileBottomNav from "@modules/layout/components/mobile-bottom-nav"
 import { getSiteSettings } from "@lib/data/site-settings"
 import { CompareProvider } from "@modules/products/components/compare/context"
+import CompareTray from "@modules/products/components/compare/compare-tray"
 import {
   ClientFreeShippingNudge,
   ClientCartDrawer,
@@ -62,6 +63,8 @@ export default async function PageLayout(props: { children: React.ReactNode }) {
 
       {/* Recent purchases social proof ticker */}
       {tickerEnabled && <ClientRecentPurchasesTicker interval={tickerInterval} />}
+
+      <CompareTray />
     </CompareProvider>
   )
 }

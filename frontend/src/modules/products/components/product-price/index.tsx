@@ -29,7 +29,7 @@ export default function ProductPrice({
   const isSale = selectedPrice.price_type === "sale"
   const priceClass =
     size === "lg"
-      ? "text-2xl md:text-[26px] font-bold leading-none"
+      ? "text-3xl md:text-[34px] font-extrabold leading-none"
       : "text-2xl font-bold"
 
   return (
@@ -38,7 +38,7 @@ export default function ProductPrice({
         <span
           className={clx(priceClass, {
             "text-danger": isSale,
-            "text-ink": !isSale,
+            "text-black": !isSale,
           })}
         >
           {!variant && "From "}

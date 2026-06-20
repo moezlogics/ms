@@ -277,15 +277,15 @@ export default async function ComparePage({
             }}
           >
             {/* Header row with minimal product identifier */}
-            <div className="sticky top-0 z-10 bg-surface border-b border-line p-3">
-              <span className="text-[11px] font-bold uppercase tracking-widest text-ink/50">
+            <div className="sticky top-0 z-10 bg-surface border-b border-line py-1.5 px-2.5">
+              <span className="text-[11px] font-extrabold uppercase tracking-widest text-black">
                 Specifications
               </span>
             </div>
             {products.map((p) => (
               <div
                 key={p.id}
-                className="sticky top-0 z-10 bg-surface border-b border-l border-line p-3 flex items-center gap-2"
+                className="sticky top-0 z-10 bg-surface border-b border-l border-line py-1.5 px-2.5 flex items-center gap-2"
               >
                 {p.thumbnail && (
                   /* eslint-disable-next-line @next/next/no-img-element */
@@ -295,14 +295,14 @@ export default async function ComparePage({
                     className="w-8 h-8 object-contain rounded border border-line bg-bg shrink-0"
                   />
                 )}
-                <span className="text-xs font-bold text-ink line-clamp-1">
+                <span className="text-xs font-extrabold text-black line-clamp-1">
                   {p.title}
                 </span>
               </div>
             ))}
 
             {/* Price Row */}
-            <div className="p-3 bg-bg border-b border-line text-xs font-bold uppercase tracking-wider text-ink/60">
+            <div className="py-1.5 px-2.5 bg-bg border-b border-line text-xs font-extrabold uppercase tracking-wider text-black">
               Price
             </div>
             {products.map((p) => {
@@ -316,15 +316,15 @@ export default async function ComparePage({
               return (
                 <div
                   key={`${p.id}-price`}
-                  className="p-3 bg-bg border-b border-l border-line text-sm font-semibold text-ink"
+                  className="py-1.5 px-2.5 bg-bg border-b border-l border-line text-sm font-semibold text-black"
                 >
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-primary font-bold">
+                    <span className="text-black font-extrabold">
                       {cheapestPrice?.calculated_price ?? "—"}
                     </span>
                     {discount > 0 && cheapestPrice?.original_price && (
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-ink/40 line-through">
+                        <span className="text-[10px] text-black/40 line-through">
                           {cheapestPrice.original_price}
                         </span>
                         <span className="text-[9px] font-bold text-rose-600 bg-rose-50 px-1 rounded">
@@ -355,7 +355,7 @@ export default async function ComparePage({
                 {/* Section header banner */}
                 {sections.length > 1 || section.name !== "Specifications" ? (
                   <div
-                    className="px-3 py-2 bg-primary/5 border-b border-line text-[11px] font-bold tracking-widest uppercase text-primary flex items-center gap-2"
+                    className="px-2.5 py-1 bg-primary/5 border-b border-line text-[11px] font-extrabold tracking-widest uppercase text-black flex items-center gap-2"
                     style={{ gridColumn: `1 / span ${cols + 1}` }}
                   >
                     <i className={`ph-fill ${section.icon}`} aria-hidden />
@@ -372,8 +372,8 @@ export default async function ComparePage({
                       style={{ display: "contents" }}
                     >
                       <div
-                        className={`p-3 border-b border-line text-xs font-medium ${
-                          differs ? "text-primary font-bold" : "text-ink"
+                        className={`py-1.5 px-2.5 border-b border-line text-xs font-bold ${
+                          differs ? "text-black font-extrabold" : "text-black"
                         } ${zebra ? "bg-bg" : "bg-surface/30"}`}
                       >
                         {row.label}
@@ -381,11 +381,11 @@ export default async function ComparePage({
                       {row.values.map((v, i) => (
                         <div
                           key={`row-${section.name}-${row.key}-${i}`}
-                          className={`p-3 border-b border-l border-line text-xs ${
-                            differs ? "text-ink font-semibold" : "text-ink/80"
+                          className={`py-1.5 px-2.5 border-b border-l border-line text-xs ${
+                            differs ? "text-black font-semibold" : "text-black/85 font-medium"
                           } ${zebra ? "bg-bg" : "bg-surface/30"}`}
                         >
-                          {v || <span className="text-ink/35">—</span>}
+                          {v || <span className="text-black/35">—</span>}
                         </div>
                       ))}
                     </div>

@@ -1,6 +1,7 @@
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "../../thumbnail"
 import type { ProductCardProps } from "./types"
+import { isProductUpcoming } from "@lib/util/product"
 
 /**
  * Minimal clean card — laam.pk / everlane vibe. Default variant.
@@ -18,6 +19,7 @@ export default function MinimalCard({ productPath,
   thumbnailAlt,
   priority,
 }: ProductCardProps) {
+  const isUpcoming = isProductUpcoming(product)
   return (
     <article
       className={`group relative flex flex-col card-press${
@@ -50,14 +52,19 @@ export default function MinimalCard({ productPath,
           />
         </LocalizedClientLink>
 
-        {(isNew || isSale) && (
+        {(isUpcoming || isNew || isSale) && (
           <div className="absolute top-1 left-1 flex flex-col gap-0.5 z-[1] pointer-events-none">
-            {isNew && !isSale && (
+            {isUpcoming && (
+              <span className="inline-flex items-center justify-center text-[9px] leading-none font-bold uppercase tracking-wider bg-amber-500 text-black px-[6px] py-[3px] rounded-[3px] shadow-sm">
+                Upcoming
+              </span>
+            )}
+            {isNew && !isSale && !isUpcoming && (
               <span className="text-[6.5px] font-bold uppercase tracking-wider bg-neutral-900 text-white px-[3px] py-[0.5px] rounded-[1.5px] shadow-sm">
                 New
               </span>
             )}
-            {isSale && cheapestPrice?.percentage_diff && (
+            {isSale && cheapestPrice?.percentage_diff && !isUpcoming && (
               <span className="text-[6.5px] font-bold uppercase tracking-wider bg-red-600 text-white px-[3px] py-[0.5px] rounded-[1.5px] shadow-sm">
                 −{cheapestPrice.percentage_diff}%
               </span>

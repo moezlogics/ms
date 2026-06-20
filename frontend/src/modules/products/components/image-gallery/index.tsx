@@ -237,7 +237,7 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
           </div>
 
           {/* Mobile View: visible on screen < lg */}
-          <div className="block lg:hidden relative w-full overflow-hidden px-10">
+          <div className="block lg:hidden relative w-full overflow-hidden px-2">
             <div
               ref={mobileScrollRef}
               onScroll={handleMobileScroll}
@@ -397,17 +397,17 @@ function GalleryArrows({
         type="button"
         onClick={(e) => { e.stopPropagation(); onChange((activeIndex - 1 + total) % total) }}
         aria-label="Previous image"
-        className="pointer-events-auto w-8 h-8 rounded-full bg-surface border border-line flex items-center justify-center shadow-md text-ink/75"
+        className="pointer-events-auto w-6 h-6 rounded-full bg-surface border border-line flex items-center justify-center shadow-md text-black"
       >
-        <i className="ph-bold ph-caret-left text-xs" aria-hidden />
+        <i className="ph-bold ph-caret-left text-[10px]" aria-hidden />
       </button>
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onChange((activeIndex + 1) % total) }}
         aria-label="Next image"
-        className="pointer-events-auto w-8 h-8 rounded-full bg-surface border border-line flex items-center justify-center shadow-md text-ink/75"
+        className="pointer-events-auto w-6 h-6 rounded-full bg-surface border border-line flex items-center justify-center shadow-md text-black"
       >
-        <i className="ph-bold ph-caret-right text-xs" aria-hidden />
+        <i className="ph-bold ph-caret-right text-[10px]" aria-hidden />
       </button>
     </div>
   )

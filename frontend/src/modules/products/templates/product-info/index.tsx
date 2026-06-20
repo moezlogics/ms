@@ -131,7 +131,7 @@
       return (
         <div className="flex flex-col gap-1">
           <div
-            className="text-[20px] md:text-[25px] font-bold text-ink leading-[1.15] tracking-tight"
+            className="text-[23px] md:text-[27px] font-extrabold text-black leading-[1.15] tracking-tight"
             data-testid="product-title"
           >
             {product.title}
@@ -207,13 +207,8 @@
         targetKey: specs.camera_main ? "camera_main" : specs.camera ? "camera" : "camera_front",
         icon: (
           <svg viewBox="0 0 24 24" className="w-[24px] h-[24px] md:w-[26px] md:h-[26px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 8l1.5-3h5L16 8Z" />
-            <rect x="3" y="8" width="18" height="12" rx="1.5" />
-            <circle cx="12" cy="14" r="3.5" />
-            <circle cx="6.5" cy="11.5" r="1" />
-            <path d="M5.5 3l0.5 1.5" />
-            <path d="M3.5 4.5l1.2 1" />
-            <path d="M7.5 4l-0.8 1.2" />
+            <path d="M14.5 4h-5L8 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4l-1.5-3z" />
+            <circle cx="12" cy="13" r="4" />
           </svg>
         )
       },
@@ -276,16 +271,16 @@
           <a
             key={spec.key}
             href={`#spec-row-${spec.targetKey}`}
-            className="flex items-center gap-1 md:gap-2.5 pl-1.5 pr-2 py-2 md:p-3 w-full min-w-0"
+            className="flex items-center gap-1 md:gap-2.5 pl-1.5 pr-2 py-1.5 md:py-2.5 md:px-3 w-full min-w-0"
           >
-            <div className="w-8 h-8 flex items-center justify-center shrink-0 text-ink/65">
+            <div className="w-8 h-8 flex items-center justify-center shrink-0 text-black">
               {spec.icon}
             </div>
             <div className="min-w-0 flex-1 leading-tight">
-              <span className="block text-[11px] md:text-[13.5px] font-medium text-ink truncate" title={spec.boldValue}>
+              <span className="block text-[12px] md:text-[14.5px] font-bold text-black truncate" title={spec.boldValue}>
                 {spec.boldValue}
               </span>
-              <span className="block text-[9.5px] md:text-[11px] font-normal text-ink/65 truncate mt-0.5" title={spec.subValue}>
+              <span className="block text-[10px] md:text-[12px] font-semibold text-black/75 truncate mt-0.5" title={spec.subValue}>
                 {spec.subValue}
               </span>
             </div>
@@ -302,7 +297,7 @@
     return (
       <div id="product-info" className="flex flex-col gap-2">
         <h1
-          className="text-[21px] md:text-[25px] font-bold text-ink leading-[1.15] tracking-tight"
+          className="text-[23px] md:text-[28px] font-extrabold text-black leading-[1.15] tracking-tight"
           data-testid="product-title"
         >
           {product.title}
