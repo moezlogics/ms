@@ -1,0 +1,31 @@
+cat > /home/mobilestore-api/htdocs/api.mobilestore.pk/ecosystem.config.js << 'SCRIPT'
+module.exports = {
+  apps: [
+    {
+      name: "medusa-backend",
+      cwd: "/home/mobilestore-api/htdocs/api.mobilestore.pk",
+      // Point directly to the CLI JS file for full PM2 Cluster Mode support (npx doesn't support clustering)
+      script: "./node_modules/@medusajs/cli/bin/medusa",
+      args: "start",
+      env: {
+        NODE_ENV: "production",
+        PORT: 3062
+      },
+      instances: 2, // Run 2 instances for load balancing and zero-downtime hot reloads
+      exec_mode: "cluster",
+      autorestart: true,
+      watch: false,
+      max_memory_restart: "1500M",
+      kill_timeout: 8000,
+      listen_timeout: 15000,
+      error_file: "/home/mobilestore-api/htdocs/api.mobilestore.pk/logs/medusa-error.log",
+      out_file: "/home/mobilestore-api/htdocs/api.mobilestore.pk/logs/medusa-out.log",
+      merge_logs: true,
+      time: true
+    }
+  ]
+};
+SCRIPT
+
+# Logs folder bhi bana do
+mkdir -p /home/mobilestore-api/htdocs/api.mobilestore.pk/logs

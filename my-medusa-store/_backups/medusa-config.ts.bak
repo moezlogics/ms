@@ -1,0 +1,230 @@
+import { loadEnv, defineConfig, Modules, ContainerRegistrationKeys } from '@medusajs/framework/utils'
+
+loadEnv(process.env.NODE_ENV || 'development', process.cwd())
+
+// Build auth providers list, only including Google when credentials are set
+const authProviders: any[] = [
+  {
+    resolve: "@medusajs/medusa/auth-emailpass",
+    id: "emailpass",
+    options: {
+      hashConfig: { logN: 15, r: 8, p: 1 },
+    },
+  },
+]
+
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  authProviders.push({
+    resolve: "@medusajs/medusa/auth-google",
+    id: "google",
+    options: {
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+    },
+  })
+}
+
+export default defineConfig({
+  admin: {
+    path: '/app',
+    disable: process.env.NODE_ENV === 'production', 
+    vite: () => {
+      return {
+        server: {
+          allowedHosts: ["api.mobilestore.pk", "localhost"]
+        }
+      }
+    }
+  },
+
+
+  projectConfig: {
+    databaseUrl: process.env.DATABASE_URL,
+    redisUrl: process.env.REDIS_URL,
+    http: {
+      storeCors: process.env.STORE_CORS!,
+      adminCors: process.env.ADMIN_CORS!,
+      authCors: process.env.AUTH_CORS!,
+      jwtSecret: process.env.JWT_SECRET || "15afa7452e440137afbb3e3c0d48e653ef91d3fe422ded68e60e5b71cc76f32c4a708f43367f5ff512e7a1dfcd392f13",
+      cookieSecret: process.env.COOKIE_SECRET || "15afa7452e440137afbb3e3c0d48e653ef91d3fe422ded68e60e5b71cc76f32c4a708f43367f5ff512e7a1dfcd392f14",
+    },
+  },
+  modules: {
+    /* ---------------------------------------------------------------- *
+     * Redis-backed CACHE + EVENT BUS + WORKFLOW ENGINE                 *
+     *                                                                  *
+     * Activated automatically when REDIS_URL is set AND the matching   *
+     * provider packages are installed:                                 *
+     *   pnpm add @medusajs/cache-redis \                               *
+     *           @medusajs/event-bus-redis \                            *
+     *           @medusajs/workflow-engine-redis                        *
+     *                                                                  *
+     * Without these the project falls back to Medusa's in-memory       *
+     * defaults (single-node, dev-only). Production should always use   *
+     * Redis so multi-replica deploys share state and high-traffic      *
+     * pages don't re-query the DB on every hit.                        *
+     * ---------------------------------------------------------------- */
+    ...(process.env.REDIS_URL
+      ? {
+          [Modules.CACHE]: {
+            resolve: "@medusajs/cache-redis",
+            options: { redisUrl: process.env.REDIS_URL, ttl: 60 },
+          },
+          [Modules.EVENT_BUS]: {
+            resolve: "@medusajs/event-bus-redis",
+            options: { redisUrl: process.env.REDIS_URL },
+          },
+          [Modules.WORKFLOW_ENGINE]: {
+            resolve: "@medusajs/workflow-engine-redis",
+            options: {
+              redis: { url: process.env.REDIS_URL },
+            },
+          },
+        }
+      : {}),
+
+    [Modules.AUTH]: {
+      resolve: "@medusajs/medusa/auth",
+      dependencies: [Modules.CACHE, ContainerRegistrationKeys.LOGGER],
+      options: {
+        providers: authProviders,
+      },
+    },
+    [Modules.NOTIFICATION]: {
+      resolve: "@medusajs/medusa/notification",
+      options: {
+        providers: [
+          {
+            resolve: "./src/modules/email-notifications",
+            id: "smtp-notification",
+            // CRITICAL: `channels` MUST live at the provider top-level in
+            // Medusa V2. When nested inside `options` (as it was before),
+            // the notification module sees no provider registered for the
+            // "email" channel, so every `createNotifications({ channel:
+            // "email", ... })` call silently no-ops — explaining why
+            // order-placed, contact-form, OTP and password-reset emails
+            // were all going nowhere. See:
+            // https://docs.medusajs.com/resources/architectural-modules/notification
+            channels: ["email"],
+            options: {
+              host: process.env.SMTP_HOST || "smtp.gmail.com",
+              port: Number(process.env.SMTP_PORT) || 587,
+              user: process.env.SMTP_USER || "",
+              pass: process.env.SMTP_PASS || "",
+              from: process.env.SMTP_FROM || process.env.SMTP_USER || "",
+            },
+          },
+        ],
+      },
+    },
+    [Modules.FILE]: {
+      resolve: "@medusajs/file",
+      options: {
+        providers: [
+          {
+            resolve: "./src/modules/cdn-file",
+            id: "cdn",
+            options: {
+              url: process.env.CDN_PUBLIC_URL,
+              key: process.env.CDN_API_KEY,
+            },
+          },
+        ],
+      },
+    },
+    // Custom modules (using underscores instead of hyphens)
+
+    "blog": {
+      resolve: "./src/modules/blog",
+    },
+    "site_settings": {
+      resolve: "./src/modules/site-settings",
+    },
+    "banners": {
+      resolve: "./src/modules/banners",
+    },
+    "search_log": {
+      resolve: "./src/modules/search-log",
+    },
+    "contact_leads": {
+      resolve: "./src/modules/contact-leads",
+    },
+    "advanced_reviews": {
+      resolve: "./src/modules/advanced_reviews",
+    },
+    "brand": {
+      resolve: "./src/modules/brand",
+    },
+    "push_notifications": {
+      resolve: "./src/modules/push-notifications",
+    },
+
+    // --- NEW MODULES (from Medusa examples + custom) ---
+
+    // OTP Auth Module — 6-digit OTP for signup/password reset
+    "otp_auth": {
+      resolve: "./src/modules/otp-auth",
+    },
+
+    // Loyalty Points Module — earn & redeem points
+    "loyalty": {
+      resolve: "./src/modules/loyalty",
+    },
+
+    // Bundled Products Module — product bundles with discount
+    "bundledProduct": {
+      resolve: "./src/modules/bundled-product",
+    },
+
+    // Agentic Commerce Module — AI agent (ChatGPT) integration +
+    // storefront AI shopping-assistant chatbot.
+    "agenticCommerce": {
+      resolve: "./src/modules/agentic-commerce",
+      options: {
+        signatureKey:
+          process.env.AGENTIC_COMMERCE_SIGNATURE_KEY || "supersecret112",
+        openaiApiKey: process.env.OPENAI_API_KEY,
+        openaiModel: process.env.OPENAI_MODEL || "gpt-4o-mini",
+      },
+    },
+
+    // Custom Spec Template Module
+    "specTemplate": {
+      resolve: "./src/modules/spec-template",
+    },
+  },
+  plugins: [
+
+    {
+      resolve: "@rokmohar/medusa-plugin-meilisearch",
+      options: {
+        config: {
+          host: process.env.MEILISEARCH_HOST || "http://127.0.0.1:7700",
+          apiKey: process.env.MEILISEARCH_API_KEY || "",
+        },
+        settings: {
+          products: {
+            indexSettings: {
+              searchableAttributes: ["title", "description", "variant_sku"],
+              displayedAttributes: ["id", "title", "description", "variant_sku", "thumbnail", "handle"],
+            },
+            primaryKey: "id",
+          },
+        },
+      },
+    },
+    ...(process.env.GA_MEASUREMENT_ID && process.env.GA_API_SECRET
+      ? [
+        {
+          resolve: "@variablevic/google-analytics-medusa",
+          options: {
+            measurementId: process.env.GA_MEASUREMENT_ID,
+            apiSecret: process.env.GA_API_SECRET,
+            debug: process.env.NODE_ENV !== "production",
+          },
+        },
+      ]
+      : []),
+  ],
+})

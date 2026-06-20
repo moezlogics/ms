@@ -1,0 +1,43 @@
+# Node dependencies
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Local build / output directories
+dist/
+build/
+.next/
+out/
+bin/
+obj/
+
+# Logs
+*.log
+logs/
+
+# Build caching/info
+*.tsbuildinfo
+
+# Archives and packages
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+
+# OS specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

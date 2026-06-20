@@ -1,0 +1,441 @@
+import { defineRouteConfig } from "@medusajs/admin-sdk"
+import {
+  Container,
+  Heading,
+  Button,
+  Table,
+  Badge,
+  Text,
+} from "@medusajs/ui"
+import {
+  ChartPie,
+  ShoppingCart,
+  Users,
+  Cash,
+  ArrowPath,
+  CubeSolid,
+} from "@medusajs/icons"
+import { useEffect, useState } from "react"
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts"
+import { A, adminSection } from "../../lib/admin-theme"
+
+type Stats = {
+  totalSales: number
+  totalOrders: number
+  averageOrderValue: number
+  customerCount: number
+  completedOrders: number
+  pendingOrders: number
+}
+
+type ChartItem = {
+  date: string
+  sales: number
+  orders: number
+  rawDate: string
+}
+
+type RecentOrder = {
+  id: string
+  display_id: number
+  created_at: string
+  status: string
+  total: number
+  currency_code: string
+  customer_name: string
+  city: string
+  items_count: number
+  items: { title: string; thumbnail: string; quantity: number }[]
+}
+
+type TopProduct = {
+  title: string
+  quantity: number
+  sales: number
+  thumbnail: string
+}
+
+const formatCurrency = (amount: number, currency: string = "PKR") => {
+  const val = amount / 100
+  return new Intl.NumberFormat("en-PK", {
+    style: "currency",
+    currency: currency.toUpperCase(),
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(val)
+}
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [chartData, setChartData] = useState<ChartItem[]>([])
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([])
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([])
+  const [loading, setLoading] = useState(true)
+  const [chartView, setChartView] = useState<"sales" | "orders">("sales")
+
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch("/admin/dashboard-stats", {
+        credentials: "include",
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setStats(data.stats)
+        setChartData(data.chartData)
+        setRecentOrders(data.recentOrders)
+        setTopProducts(data.topProducts)
+      } else {
+        console.error("Failed to load dashboard stats", await res.text())
+      }
+    } catch (e) {
+      console.error("Error fetching stats:", e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  if (loading && !stats) {
+    return (
+      <Container className="p-8">
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center", justifyContent: "center", minHeight: 400 }}>
+          <Text className="text-ui-fg-subtle">Loading your e-commerce dashboard...</Text>
+        </div>
+      </Container>
+    )
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "completed":
+      case "fulfilled":
+      case "paid":
+        return "green"
+      case "pending":
+      case "processing":
+        return "orange"
+      case "canceled":
+      case "failed":
+        return "red"
+      default:
+        return "grey"
+    }
+  }
+
+  return (
+    <Container className="p-8" style={{ background: A.bgSubtle, color: A.fg }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+        <div>
+          <Heading level="h1" className="text-2xl font-bold flex items-center gap-2">
+            <ChartPie /> Dashboard
+          </Heading>
+          <Text className="text-ui-fg-subtle text-sm mt-1">
+            Real-time analytics, order trends, and customer metrics.
+          </Text>
+        </div>
+        <Button variant="secondary" onClick={loadData} className="flex items-center gap-2">
+          <ArrowPath /> Refresh
+        </Button>
+      </div>
+
+      {/* Grid: 4 Stats Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 20, marginBottom: 24 }}>
+        {/* Card 1: Total Sales */}
+        <div style={{ ...adminSection, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Text className="text-xs font-semibold text-ui-fg-subtle uppercase tracking-wider">Total Revenue</Text>
+            <div style={{ padding: 6, borderRadius: 6, background: "rgba(34, 197, 94, 0.1)", color: A.success }}>
+              <Cash />
+            </div>
+          </div>
+          <Heading level="h2" className="text-2xl font-bold mt-1">
+            {stats ? formatCurrency(stats.totalSales) : "PKR 0"}
+          </Heading>
+          <Text className="text-xs text-ui-fg-muted">Excludes canceled orders</Text>
+        </div>
+
+        {/* Card 2: Total Orders */}
+        <div style={{ ...adminSection, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Text className="text-xs font-semibold text-ui-fg-subtle uppercase tracking-wider">Total Orders</Text>
+            <div style={{ padding: 6, borderRadius: 6, background: "rgba(234, 179, 8, 0.1)", color: A.warning }}>
+              <ShoppingCart />
+            </div>
+          </div>
+          <Heading level="h2" className="text-2xl font-bold mt-1">
+            {stats ? stats.totalOrders : 0}
+          </Heading>
+          <Text className="text-xs text-ui-fg-muted">
+            {stats ? `${stats.completedOrders} completed • ${stats.pendingOrders} pending` : ""}
+          </Text>
+        </div>
+
+        {/* Card 3: AOV */}
+        <div style={{ ...adminSection, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Text className="text-xs font-semibold text-ui-fg-subtle uppercase tracking-wider">Average Order</Text>
+            <div style={{ padding: 6, borderRadius: 6, background: "rgba(143, 119, 243, 0.1)", color: "#8F77F3" }}>
+              <Cash />
+            </div>
+          </div>
+          <Heading level="h2" className="text-2xl font-bold mt-1">
+            {stats ? formatCurrency(stats.averageOrderValue) : "PKR 0"}
+          </Heading>
+          <Text className="text-xs text-ui-fg-muted">Revenue per order</Text>
+        </div>
+
+        {/* Card 4: Customers */}
+        <div style={{ ...adminSection, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Text className="text-xs font-semibold text-ui-fg-subtle uppercase tracking-wider">Total Customers</Text>
+            <div style={{ padding: 6, borderRadius: 6, background: "rgba(59, 130, 246, 0.1)", color: A.info }}>
+              <Users />
+            </div>
+          </div>
+          <Heading level="h2" className="text-2xl font-bold mt-1">
+            {stats ? stats.customerCount : 0}
+          </Heading>
+          <Text className="text-xs text-ui-fg-muted">Registered accounts</Text>
+        </div>
+      </div>
+
+      {/* Main Chart Section */}
+      <div style={{ ...adminSection, padding: 24, marginBottom: 24 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <Heading level="h2" className="text-base font-semibold">Store Performance Trend</Heading>
+            <Text className="text-xs text-ui-fg-subtle mt-0.5">Sales revenue and order counts over the last 30 days</Text>
+          </div>
+          <div style={{ display: "flex", gap: 8, background: A.bgField, padding: 4, borderRadius: 8, border: A.border }}>
+            <Button
+              variant={chartView === "sales" ? "primary" : "transparent"}
+              size="small"
+              onClick={() => setChartView("sales")}
+            >
+              Sales
+            </Button>
+            <Button
+              variant={chartView === "orders" ? "primary" : "transparent"}
+              size="small"
+              onClick={() => setChartView("orders")}
+            >
+              Orders
+            </Button>
+          </div>
+        </div>
+
+        {chartData.length === 0 ? (
+          <div style={{ height: 320, display: "flex", alignItems: "center", justifyContent: "center", color: A.fgMuted }}>
+            No trend data available.
+          </div>
+        ) : (
+          <div style={{ width: "100%", height: 320 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor={chartView === "sales" ? "#FF7433" : "#8F77F3"}
+                      stopOpacity={0.3}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={chartView === "sales" ? "#FF7433" : "#8F77F3"}
+                      stopOpacity={0}
+                    />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={A.borderVal} />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: A.fgSubtle, fontSize: 10 }}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: A.fgSubtle, fontSize: 10 }}
+                  tickFormatter={(v) => (chartView === "sales" ? `Rs.${v / 100}` : v)}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: A.bgCard,
+                    borderColor: A.borderVal,
+                    borderRadius: 8,
+                    color: A.fg,
+                    fontSize: 12,
+                  }}
+                  formatter={(value: any) => [
+                    chartView === "sales" ? formatCurrency(value) : `${value} orders`,
+                    chartView === "sales" ? "Revenue" : "Orders",
+                  ]}
+                  labelStyle={{ fontWeight: "bold", color: A.fg }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey={chartView === "sales" ? "sales" : "orders"}
+                  stroke={chartView === "sales" ? "#FF7433" : "#8F77F3"}
+                  strokeWidth={2.5}
+                  fillOpacity={1}
+                  fill="url(#chartGradient)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+
+      {/* Two-Column Grid: Recent Orders & Top Products */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: 24 }}>
+        {/* Left: Recent Orders */}
+        <div style={{ ...adminSection, margin: 0, padding: 20 }}>
+          <div style={{ marginBottom: 16 }}>
+            <Heading level="h2" className="text-base font-semibold">Recent Orders</Heading>
+            <Text className="text-xs text-ui-fg-subtle">Checkouts on your store storefront</Text>
+          </div>
+
+          <Table>
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell>Order</Table.HeaderCell>
+                <Table.HeaderCell>Customer</Table.HeaderCell>
+                <Table.HeaderCell>Items</Table.HeaderCell>
+                <Table.HeaderCell>Total</Table.HeaderCell>
+                <Table.HeaderCell>Status</Table.HeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {recentOrders.length === 0 ? (
+                <Table.Row>
+                  <Table.Cell colSpan={5} className="text-center py-6 text-ui-fg-muted text-xs">
+                    No orders recorded yet.
+                  </Table.Cell>
+                </Table.Row>
+              ) : (
+                recentOrders.map((order) => (
+                  <Table.Row key={order.id} style={{ cursor: "pointer" }} onClick={() => window.location.href = `/app/orders/${order.id}`}>
+                    <Table.Cell className="font-semibold text-xs">#{order.display_id}</Table.Cell>
+                    <Table.Cell className="text-xs">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{order.customer_name}</span>
+                        {order.city && <span className="text-[10px] text-ui-fg-muted">{order.city}</span>}
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell className="text-xs">{order.items_count} {order.items_count === 1 ? "item" : "items"}</Table.Cell>
+                    <Table.Cell className="text-xs font-medium">
+                      {formatCurrency(order.total, order.currency_code)}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Badge color={getStatusColor(order.status)}>
+                        {order.status.toUpperCase()}
+                      </Badge>
+                    </Table.Cell>
+                  </Table.Row>
+                ))
+              )}
+            </Table.Body>
+          </Table>
+        </div>
+
+        {/* Right: Top Selling Products */}
+        <div style={{ ...adminSection, margin: 0, padding: 20 }}>
+          <div style={{ marginBottom: 16 }}>
+            <Heading level="h2" className="text-base font-semibold">Top Selling Products</Heading>
+            <Text className="text-xs text-ui-fg-subtle">Based on quantity sold in non-canceled checkouts</Text>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {topProducts.length === 0 ? (
+              <div style={{ textAlign: "center", padding: 40, color: A.fgMuted, fontSize: 13 }}>
+                No product sales data.
+              </div>
+            ) : (
+              topProducts.map((prod, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "8px 12px",
+                    borderRadius: 8,
+                    border: A.border,
+                    background: A.bgField,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 6,
+                      background: A.bgSubtle,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                      border: A.border,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {prod.thumbnail ? (
+                      <img
+                        src={prod.thumbnail}
+                        alt={prod.title}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    ) : (
+                      <CubeSolid style={{ color: A.fgMuted }} />
+                    )}
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {prod.title}
+                    </div>
+                    <div style={{ fontSize: 11, color: A.fgSubtle, marginTop: 2 }}>
+                      {prod.quantity} sold
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: "right" }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: A.interactive }}>
+                      {formatCurrency(prod.sales)}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </Container>
+  )
+}
+
+export const config = defineRouteConfig({
+  label: "Dashboard",
+  icon: ChartPie,
+})

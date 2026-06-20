@@ -1,0 +1,107 @@
+#!/bin/bash
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+echo "=========================================================="
+echo " Starting Zero-Downtime Medusa Backend Deployment...      "
+echo "=========================================================="
+
+# 1. Define paths
+ACTIVE_DIR="$(pwd)"
+BUILD_DIR="${ACTIVE_DIR}_build_temp"
+
+echo "[1/7] Directories:"
+echo "      Active Dir: $ACTIVE_DIR"
+echo "      Build Dir:  $BUILD_DIR"
+
+# 2. Sync files to build directory
+echo "[2/7] Syncing source files to build directory..."
+mkdir -p "$BUILD_DIR"
+
+if command -v rsync >/dev/null 2>&1; then
+  rsync -a --exclude='.git' --exclude='.medusa/server' --exclude='node_modules' --exclude='logs' "$ACTIVE_DIR/" "$BUILD_DIR/"
+else
+  echo "rsync not found, falling back to cp..."
+  cp -R "$ACTIVE_DIR/"* "$BUILD_DIR/"
+  rm -rf "$BUILD_DIR/.git" "$BUILD_DIR/.medusa/server" "$BUILD_DIR/node_modules" "$BUILD_DIR/logs" 2>/dev/null || true
+fi
+
+# 3. Copy node_modules to build folder to cache package installs
+if [ -d "$ACTIVE_DIR/node_modules" ]; then
+  echo "[3/7] Copying cached node_modules to build directory..."
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a --delete "$ACTIVE_DIR/node_modules/" "$BUILD_DIR/node_modules/"
+  else
+    cp -R "$ACTIVE_DIR/node_modules" "$BUILD_DIR/"
+  fi
+else
+  echo "[3/7] No cached node_modules found. Fresh install will be performed."
+fi
+
+# 4. Install dependencies and build in the build folder
+cd "$BUILD_DIR"
+echo "[4/7] Installing dependencies in build directory..."
+npm install --no-audit --no-fund
+
+echo "[4/7] Compiling Medusa typescript files..."
+# Set memory limit to prevent VPS OOM (Out Of Memory) crash
+export NODE_OPTIONS="--max-old-space-size=1536"
+npm run build
+
+# 5. Run Database Migrations
+echo "[5/7] Running database migrations..."
+if [ -f "$ACTIVE_DIR/.env" ] && [ ! -f ".env" ]; then
+  cp "$ACTIVE_DIR/.env" ".env"
+fi
+npx medusa db:migrate
+
+# 6. Swap the builds atomically
+echo "[6/7] Build successful! Swapping compiled server files in active directory..."
+
+# Ensure logs directory exists
+mkdir -p "$ACTIVE_DIR/logs"
+
+# Atomic swap of the compiled .medusa/server folder
+mkdir -p "$ACTIVE_DIR/.medusa"
+if [ -d "$ACTIVE_DIR/.medusa/server" ]; then
+  mv "$ACTIVE_DIR/.medusa/server" "$ACTIVE_DIR/.medusa/server_old"
+fi
+mv "$BUILD_DIR/.medusa/server" "$ACTIVE_DIR/.medusa/server"
+
+# Sync other configurations/source files in case they were updated
+if command -v rsync >/dev/null 2>&1; then
+  rsync -a --exclude='node_modules' --exclude='.medusa' --exclude='logs' "$BUILD_DIR/" "$ACTIVE_DIR/"
+else
+  cp -f "$BUILD_DIR/package.json" "$ACTIVE_DIR/" 2>/dev/null || true
+  cp -f "$BUILD_DIR/medusa-config.ts" "$ACTIVE_DIR/" 2>/dev/null || true
+fi
+
+# 7. Reload PM2 with Zero-Downtime
+echo "[7/7] Reloading Medusa processes via PM2..."
+cd "$ACTIVE_DIR"
+
+# Check if application is already running in PM2
+pm2 describe medusa-backend >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+  # pm2 reload restarts workers sequentially (zero-downtime)
+  pm2 reload medusa-backend
+else
+  # First-time start
+  if [ -f "ecosystem.config.js" ]; then
+    # Run the generator script if ecosystem.config.js is a shell generator
+    if head -n 1 ecosystem.config.js | grep -q "cat >"; then
+      echo "Generating ecosystem.config.js file..."
+      bash ecosystem.config.js
+    fi
+  fi
+  pm2 start /home/mobilestore-api/htdocs/api.mobilestore.pk/ecosystem.config.js
+fi
+
+# Cleanup
+echo "Cleaning up temporary folders..."
+rm -rf "$ACTIVE_DIR/.medusa/server_old"
+rm -rf "$BUILD_DIR"
+
+echo "=========================================================="
+echo " Medusa Backend Deployment Completed Successfully!        "
+echo "=========================================================="

@@ -1,0 +1,165 @@
+import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+
+export async function GET(req: MedusaRequest, res: MedusaResponse) {
+  const query = req.scope.resolve("query") as any
+
+  try {
+    // 1. Fetch latest 1000 orders to calculate metrics
+    const { data: orders } = await query.graph({
+      entity: "order",
+      fields: [
+        "id",
+        "display_id",
+        "created_at",
+        "status",
+        "total",
+        "currency_code",
+        "email",
+        "shipping_address.first_name",
+        "shipping_address.last_name",
+        "shipping_address.city",
+        "items.title",
+        "items.quantity",
+        "items.unit_price",
+        "items.thumbnail"
+      ],
+      pagination: {
+        take: 1000,
+        skip: 0,
+        order: {
+          created_at: "DESC"
+        }
+      }
+    })
+
+    // 2. Fetch total customer count
+    let customerCount = 0
+    try {
+      const { metadata } = await query.graph({
+        entity: "customer",
+        fields: ["id"],
+        pagination: {
+          take: 1,
+          skip: 0
+        }
+      })
+      customerCount = metadata?.count || 0
+    } catch (e) {
+      console.warn("Failed to fetch customer count, defaulting to 0", e)
+    }
+
+    // 3. Aggregate metrics
+    let totalSales = 0
+    let totalOrders = 0
+    let completedOrders = 0
+    let pendingOrders = 0
+
+    // Set up 30-day time-series buckets
+    const last30Days: Record<string, { date: string, sales: number, orders: number, rawDate: string }> = {}
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      const dateStr = d.toISOString().split("T")[0] // YYYY-MM-DD
+      last30Days[dateStr] = {
+        date: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+        sales: 0,
+        orders: 0,
+        rawDate: dateStr
+      }
+    }
+
+    const recentOrders: any[] = []
+    const productSales: Record<string, { title: string, quantity: number, sales: number, thumbnail: string }> = {}
+
+    orders.forEach((order: any, idx: number) => {
+      const isCanceled = order.status === "canceled"
+      const totalAmount = order.total || 0
+
+      if (!isCanceled) {
+        totalSales += totalAmount
+        totalOrders++
+        
+        if (order.status === "completed" || order.status === "fulfilled") {
+          completedOrders++
+        } else {
+          pendingOrders++
+        }
+
+        // Group by day for the last 30 days
+        const orderDateStr = order.created_at ? order.created_at.split("T")[0] : ""
+        if (orderDateStr && last30Days[orderDateStr]) {
+          last30Days[orderDateStr].sales += totalAmount
+          last30Days[orderDateStr].orders++
+        }
+
+        // Aggregate top selling products
+        if (order.items) {
+          order.items.forEach((item: any) => {
+            const prodName = item.title || "Unknown Product"
+            if (!productSales[prodName]) {
+              productSales[prodName] = {
+                title: prodName,
+                quantity: 0,
+                sales: 0,
+                thumbnail: item.thumbnail || ""
+              }
+            }
+            productSales[prodName].quantity += item.quantity || 1
+            productSales[prodName].sales += (item.unit_price || 0) * (item.quantity || 1)
+          })
+        }
+      }
+
+      // Latest 10 orders for the UI list
+      if (idx < 10) {
+        const customerName = order.shipping_address
+          ? `${order.shipping_address.first_name || ""} ${order.shipping_address.last_name || ""}`.trim()
+          : order.email || "Guest Customer"
+
+        recentOrders.push({
+          id: order.id,
+          display_id: order.display_id,
+          created_at: order.created_at,
+          status: order.status,
+          total: totalAmount,
+          currency_code: order.currency_code || "PKR",
+          customer_name: customerName || "Guest",
+          city: order.shipping_address?.city || "",
+          items_count: order.items?.length || 0,
+          items: order.items?.map((it: any) => ({
+            title: it.title,
+            thumbnail: it.thumbnail,
+            quantity: it.quantity
+          })) || []
+        })
+      }
+    })
+
+    const averageOrderValue = totalOrders > 0 ? Math.round(totalSales / totalOrders) : 0
+
+    // Format chart data (sorted by date)
+    const chartData = Object.values(last30Days).sort((a, b) => a.rawDate.localeCompare(b.rawDate))
+
+    // Format top selling products (sorted by quantity desc)
+    const topProducts = Object.values(productSales)
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 5)
+
+    res.json({
+      stats: {
+        totalSales,
+        totalOrders,
+        averageOrderValue,
+        customerCount,
+        completedOrders,
+        pendingOrders
+      },
+      chartData,
+      recentOrders,
+      topProducts
+    })
+  } catch (error) {
+    console.error("Dashboard stats generation error:", error)
+    res.status(500).json({ error: "Failed to load dashboard statistics" })
+  }
+}
