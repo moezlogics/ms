@@ -29,7 +29,7 @@ export default function ProductPrice({
   const isSale = selectedPrice.price_type === "sale"
   const priceClass =
     size === "lg"
-      ? "text-3xl md:text-[34px] font-extrabold leading-none"
+      ? "text-[25px] md:text-[30px] font-extrabold leading-none"
       : "text-2xl font-bold"
 
   return (
