@@ -82,10 +82,10 @@ if [ ! -f "ecosystem.config.js" ]; then
 fi
 
 # Check if application is already running in PM2
-pm2 describe next-storefront >/dev/null 2>&1
+pm2 describe mobilestore >/dev/null 2>&1
 if [ $? -eq 0 ]; then
   # pm2 reload restarts workers sequentially (zero-downtime)
-  pm2 reload next-storefront
+  pm2 reload mobilestore
 else
   # First-time start
   pm2 start ecosystem.config.js
