@@ -237,7 +237,7 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
           </div>
 
           {/* Mobile View: visible on screen < lg */}
-          <div className="block lg:hidden relative w-full overflow-hidden px-3">
+          <div className="block lg:hidden relative w-full overflow-hidden px-8">
             <div
               ref={mobileScrollRef}
               onScroll={handleMobileScroll}
@@ -392,7 +392,7 @@ function GalleryArrows({
   onChange: (i: number) => void
 }) {
   return (
-    <div className="lg:hidden absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-2 pointer-events-none z-20">
+    <div className="lg:hidden absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-1.5 pointer-events-none z-20">
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onChange((activeIndex - 1 + total) % total) }}
