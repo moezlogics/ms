@@ -42,7 +42,7 @@ export default function CompactCard({ productPath,
         {(isUpcoming || isSale || isNew) && (
           <div className="absolute top-1 left-1 flex flex-col gap-0.5 z-[1] pointer-events-none">
             {isUpcoming && (
-              <span className="inline-flex items-center justify-center text-[9px] leading-none font-bold uppercase tracking-wider bg-amber-500 text-black px-[6px] py-[3px] rounded-[3px] shadow-sm">
+              <span className="inline-flex items-center justify-center text-[9px] leading-none font-bold uppercase tracking-wider bg-amber-500 text-white px-[6px] py-[3px] rounded-[3px] shadow-sm">
                 Upcoming
               </span>
             )}

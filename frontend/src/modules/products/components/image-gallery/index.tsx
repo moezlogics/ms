@@ -127,7 +127,7 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
 
   if (!galleryItems.length) {
     return (
-      <div className={`${aspectClass} w-full rounded-xl bg-surface flex items-center justify-center`}>
+      <div className={`${aspectClass} w-full rounded-[var(--radius-card)] bg-surface flex items-center justify-center`}>
         <i className="ph ph-image text-5xl text-ink/30" aria-hidden />
       </div>
     )
@@ -165,7 +165,7 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
             {isActiveVideo ? (
               /* ──── Video player ──── */
               <div
-                className={`relative ${aspectClass} w-full rounded-xl bg-ink/5 overflow-hidden group cursor-pointer`}
+                className={`relative ${aspectClass} w-full rounded-[var(--radius-card)] bg-ink/5 overflow-hidden group cursor-pointer`}
                 onClick={() => setLightboxIndex(activeIndex)}
               >
                 <video
@@ -197,7 +197,7 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
                 onMouseLeave={() => setIsZooming(false)}
                 onMouseMove={handleMouseMove}
                 onClick={() => setLightboxIndex(activeIndex)}
-                className={`relative ${aspectClass} w-full rounded-xl bg-bg overflow-hidden cursor-zoom-in group`}
+                className={`relative ${aspectClass} w-full rounded-[var(--radius-card)] bg-bg overflow-hidden cursor-zoom-in group`}
                 role="button"
                 tabIndex={0}
                 aria-label="Open product image in lightbox"
@@ -248,7 +248,7 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
                 <div
                   key={item.id || i}
                   onClick={() => setLightboxIndex(i)}
-                  className={`w-full shrink-0 snap-center relative ${aspectClass} bg-bg rounded-xl overflow-hidden cursor-zoom-in`}
+                  className={`w-full shrink-0 snap-center relative ${aspectClass} bg-bg rounded-[var(--radius-card)] overflow-hidden cursor-zoom-in`}
                 >
                   {item.type === "video" ? (
                     <video
@@ -312,7 +312,7 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
                   role="tab"
                   aria-selected={isActive}
                   onClick={() => handleThumbnailClick(i)}
-                  className={`relative shrink-0 w-10 h-10 md:w-16 md:h-16 rounded-md md:rounded-lg overflow-hidden bg-surface transition-all duration-200 ${
+                  className={`relative shrink-0 w-10 h-10 md:w-16 md:h-16 rounded-[var(--radius-card)] overflow-hidden bg-surface transition-all duration-200 ${
                     isActive
                       ? "ring-2 ring-primary"
                       : "ring-1 ring-line/50 opacity-60 hover:opacity-100"
@@ -392,22 +392,22 @@ function GalleryArrows({
   onChange: (i: number) => void
 }) {
   return (
-    <div className="lg:hidden absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-1 pointer-events-none z-20">
+    <div className="lg:hidden absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between -mx-2.5 pointer-events-none z-20">
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onChange((activeIndex - 1 + total) % total) }}
         aria-label="Previous image"
-        className="pointer-events-auto w-6 h-6 rounded-full bg-surface border border-line flex items-center justify-center shadow-md text-black"
+        className="pointer-events-auto w-[26px] h-[26px] rounded-full bg-surface border border-line flex items-center justify-center shadow-md text-black"
       >
-        <i className="ph-bold ph-caret-left text-[10px]" aria-hidden />
+        <i className="ph-bold ph-caret-left text-[13px]" aria-hidden />
       </button>
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onChange((activeIndex + 1) % total) }}
         aria-label="Next image"
-        className="pointer-events-auto w-6 h-6 rounded-full bg-surface border border-line flex items-center justify-center shadow-md text-black"
+        className="pointer-events-auto w-[26px] h-[26px] rounded-full bg-surface border border-line flex items-center justify-center shadow-md text-black"
       >
-        <i className="ph-bold ph-caret-right text-[10px]" aria-hidden />
+        <i className="ph-bold ph-caret-right text-[13px]" aria-hidden />
       </button>
     </div>
   )

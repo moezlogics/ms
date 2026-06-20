@@ -46,8 +46,8 @@ export default function MobileBrandsSidebar({ brands }: Props) {
               "flex flex-col items-center justify-center py-1.5 px-0.5 small:py-2.5 small:px-1.5 transition-all text-center relative group",
               "focus-visible:outline-none focus-visible:bg-surface",
               isAllActive
-                ? "bg-surface/90 font-semibold text-primary shadow-sm border border-line/30 scale-[1.02]"
-                : "text-ink/65 hover:bg-surface/50 hover:text-primary hover:scale-[1.02]"
+                ? "bg-surface/90 font-bold text-primary shadow-sm border border-line/30 scale-[1.02]"
+                : "text-black hover:bg-surface/50 hover:text-primary hover:scale-[1.02]"
             ].join(" ")}
             style={{ borderRadius: "var(--radius-sidebar)" }}
           >
@@ -61,17 +61,17 @@ export default function MobileBrandsSidebar({ brands }: Props) {
             
             <div
               className={[
-                "w-9 h-9 small:w-12 small:h-12 flex items-center justify-center mb-1 transition-all relative shrink-0",
+                "w-[44px] h-[44px] small:w-[56px] small:h-[56px] flex items-center justify-center mb-1 transition-all relative shrink-0",
                 isAllActive 
                   ? "bg-primary/10 text-primary border border-primary/20 shadow-inner"
                   : "bg-surface-alt/70 text-ink/40 border border-line/40 group-hover:bg-primary/5 group-hover:text-primary group-hover:border-primary/20"
               ].join(" ")}
               style={{ borderRadius: "var(--radius-sidebar)" }}
             >
-              <i className="ph-bold ph-squares-four text-base small:text-xl" />
+              <i className="ph-bold ph-squares-four text-lg small:text-2xl" />
             </div>
             
-            <span className="text-[9px] small:text-[11px] leading-tight font-semibold break-words max-w-[48px] small:max-w-[64px] transition-colors">
+            <span className="text-[10px] small:text-[12.5px] leading-tight font-extrabold text-black group-hover:text-primary break-words max-w-[54px] small:max-w-[76px] transition-colors">
               Shop All
             </span>
           </LocalizedClientLink>
@@ -90,8 +90,8 @@ export default function MobileBrandsSidebar({ brands }: Props) {
                   "flex flex-col items-center justify-center py-1.5 px-0.5 small:py-2.5 small:px-1.5 text-center transition-all relative group",
                   "focus-visible:outline-none focus-visible:bg-surface",
                   isActive
-                    ? "bg-surface/90 font-semibold text-primary shadow-sm border border-line/30 scale-[1.02]"
-                    : "text-ink/65 hover:bg-surface/50 hover:text-primary hover:scale-[1.02]"
+                    ? "bg-surface/90 font-bold text-primary shadow-sm border border-line/30 scale-[1.02]"
+                    : "text-black hover:bg-surface/50 hover:text-primary hover:scale-[1.02]"
                 ].join(" ")}
                 style={{ borderRadius: "var(--radius-sidebar)" }}
               >
@@ -106,7 +106,7 @@ export default function MobileBrandsSidebar({ brands }: Props) {
                 {/* Brand Logo Container */}
                 <div
                   className={[
-                    "w-9 h-9 small:w-12 small:h-12 overflow-hidden bg-white border flex items-center justify-center mb-1 transition-all relative shrink-0",
+                    "w-[44px] h-[44px] small:w-[56px] small:h-[56px] overflow-hidden bg-white border flex items-center justify-center mb-1 transition-all relative shrink-0",
                     isActive 
                       ? "border-primary/50 shadow-md scale-[1.05]" 
                       : "border-line/60 group-hover:border-primary/30 group-hover:shadow-sm"
@@ -118,18 +118,18 @@ export default function MobileBrandsSidebar({ brands }: Props) {
                       src={brand.logo_url}
                       alt={brand.name}
                       fill
-                      sizes="(max-width: 1024px) 36px, 48px"
-                      className="object-contain p-1 small:p-1.5 transition-transform group-hover:scale-110"
+                      sizes="(max-width: 1024px) 44px, 56px"
+                      className="object-contain p-[1px] small:p-[1.5px] transition-transform group-hover:scale-110"
                     />
                   ) : (
                     <div className="w-full h-full bg-surface flex items-center justify-center text-ink/30 transition-colors group-hover:text-primary/70">
-                      <i className="ph ph-tag text-sm small:text-lg" />
+                      <i className="ph ph-tag text-base small:text-xl" />
                     </div>
                   )}
                 </div>
 
                 {/* Brand Label */}
-                <span className="text-[9px] small:text-[11px] leading-tight font-semibold break-words max-w-[48px] small:max-w-[64px] transition-colors">
+                <span className="text-[10px] small:text-[12.5px] leading-tight font-extrabold text-black group-hover:text-primary break-words max-w-[54px] small:max-w-[76px] transition-colors">
                   {brand.name}
                 </span>
               </LocalizedClientLink>

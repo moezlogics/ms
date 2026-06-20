@@ -201,11 +201,11 @@ function ReviewModal({
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-line sticky top-0 bg-bg rounded-t-2xl z-10">
             <div>
-              <h2 className="text-base font-semibold text-ink">Write a Review</h2>
-              <p className="text-[11px] text-ink/50 truncate max-w-[250px]">{productTitle}</p>
+              <h2 className="text-base font-extrabold text-black">Write a Review</h2>
+              <p className="text-[11px] text-black/60 font-semibold truncate max-w-[250px]">{productTitle}</p>
             </div>
             <button onClick={handleClose} className="w-8 h-8 flex items-center justify-center hover:bg-surface rounded-full transition">
-              <i className="ph-bold ph-x text-sm text-ink/60" aria-hidden />
+              <i className="ph-bold ph-x text-sm text-black" aria-hidden />
             </button>
           </div>
 
@@ -227,7 +227,7 @@ function ReviewModal({
 
               {/* Rating stars */}
               <div className="bg-surface rounded-lg p-3 flex items-center justify-between">
-                <span className="text-xs font-semibold text-ink/60">Overall Rating *</span>
+                <span className="text-xs font-bold text-black">Overall Rating *</span>
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button key={star} type="button" onClick={() => setRating(star)} className="p-0.5 transition-transform hover:scale-110">
@@ -240,40 +240,40 @@ function ReviewModal({
 
               {/* Review text */}
               <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-ink/60">Your Experience</label>
+                <label className="text-[11px] font-bold text-black">Your Experience</label>
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   rows={3}
                   placeholder="Tell other shoppers about your experience..."
                   maxLength={2000}
-                  className="w-full border border-line rounded-lg px-3 py-2.5 text-sm resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition bg-bg"
+                  className="w-full border border-black/35 rounded-lg px-3 py-2.5 text-sm resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition bg-bg text-black font-semibold"
                 />
-                <p className="text-[10px] text-ink/30 text-right">{content.length}/2000</p>
+                <p className="text-[10px] text-black/40 text-right">{content.length}/2000</p>
               </div>
 
               {/* Guest fields */}
               {!customer && (
-                <div className="space-y-2.5 bg-primary/5 p-3 rounded-lg border border-primary/15">
-                  <p className="text-[11px] font-bold text-primary">Reviewing as a Guest</p>
+                <div className="space-y-2.5 bg-black/5 p-3 rounded-lg border border-black/15">
+                  <p className="text-[11.5px] font-extrabold text-black">Reviewing as a Guest</p>
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-ink/60">Your Name *</label>
+                    <label className="text-[11px] font-bold text-black">Your Name *</label>
                     <input
                       type="text"
                       value={guestName}
                       onChange={e => setGuestName(e.target.value)}
-                      className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/30 outline-none bg-bg"
+                      className="w-full border border-black/35 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/30 outline-none bg-bg text-black font-semibold"
                       placeholder="e.g. Ali Khan"
                       required
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-ink/60">Your Email *</label>
+                    <label className="text-[11px] font-bold text-black">Your Email *</label>
                     <input
                       type="email"
                       value={guestEmail}
                       onChange={e => setGuestEmail(e.target.value)}
-                      className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/30 outline-none bg-bg"
+                      className="w-full border border-black/35 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/30 outline-none bg-bg text-black font-semibold"
                       placeholder="ali@example.com"
                       required
                     />
@@ -384,16 +384,16 @@ export default function ProductReviews({ productId, productTitle }: { productId:
       {/* Summary + Write review */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-surface rounded-xl p-4 border border-line">
         <div className="flex items-center gap-3">
-          <div className="text-3xl font-bold text-ink leading-none">
+          <div className="text-3xl font-extrabold text-black leading-none">
             {avg.toFixed(1)}
           </div>
           <div className="flex flex-col">
             <div className="flex gap-0.5">
               {[1,2,3,4,5].map(star => (
-                <i key={star} className={`ph-fill ph-star text-sm ${star <= Math.round(avg) ? 'text-warning' : 'text-ink/15'}`} aria-hidden />
+                <i key={star} className={`ph-fill ph-star text-sm ${star <= Math.round(avg) ? 'text-warning' : 'text-black/15'}`} aria-hidden />
               ))}
             </div>
-            <span className="text-[11px] text-ink/50 mt-0.5">
+            <span className="text-[11px] text-black font-semibold mt-0.5">
               Based on {total} review{total === 1 ? "" : "s"}
             </span>
           </div>
@@ -432,7 +432,7 @@ export default function ProductReviews({ productId, productTitle }: { productId:
                   />
                   <div>
                     <div className="flex items-center gap-1">
-                      <p className="text-sm font-semibold text-ink">
+                      <p className="text-sm font-extrabold text-black">
                         {review.customer?.first_name
                           ? `${review.customer.first_name} ${review.customer.last_name || ""}`
                           : (review.guest_name || "Guest")}
@@ -443,7 +443,7 @@ export default function ProductReviews({ productId, productTitle }: { productId:
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-ink/35">
+                    <p className="text-[10px] text-black/55 font-medium">
                       {new Date(review.created_at).toLocaleDateString("en-PK", { year: "numeric", month: "short", day: "numeric" })}
                     </p>
                   </div>
@@ -455,7 +455,7 @@ export default function ProductReviews({ productId, productTitle }: { productId:
                 </div>
               </div>
 
-              <p className="text-sm text-ink/75 leading-relaxed mt-2.5 whitespace-pre-line">
+              <p className="text-sm text-black font-semibold leading-relaxed mt-2.5 whitespace-pre-line">
                 {review.content}
               </p>
 
@@ -477,11 +477,11 @@ export default function ProductReviews({ productId, productTitle }: { productId:
 
               {/* Store owner reply */}
               {review.owner_reply && (
-                <div className="mt-3 rounded-lg border border-primary/15 bg-primary/5 p-3">
-                  <p className="mb-0.5 text-[9px] font-bold uppercase tracking-[0.15em] text-primary">
+                <div className="mt-3 rounded-lg border border-black/15 bg-black/5 p-3">
+                  <p className="mb-0.5 text-[9.5px] font-extrabold uppercase tracking-[0.15em] text-black">
                     Store Reply
                   </p>
-                  <p className="whitespace-pre-line text-xs leading-relaxed text-ink/70">
+                  <p className="whitespace-pre-line text-xs leading-relaxed text-black font-medium">
                     {review.owner_reply}
                   </p>
                 </div>

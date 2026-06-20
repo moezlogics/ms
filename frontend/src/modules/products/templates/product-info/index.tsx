@@ -136,7 +136,7 @@
           >
             {product.title}
           {isUpcoming && (
-            <span className="ml-2 inline-flex items-center justify-center text-[9px] md:text-[10px] leading-none font-bold uppercase tracking-wider bg-amber-500 text-black px-[6px] py-[3px] rounded-[3px] shadow-sm align-middle">
+            <span className="ml-2 inline-flex items-center justify-center text-[9px] md:text-[10px] leading-none font-bold uppercase tracking-wider bg-amber-500 text-white px-[6px] py-[3px] rounded-[3px] shadow-sm align-middle">
               Upcoming
             </span>
           )}
@@ -206,7 +206,7 @@
         subValue: cameraFrontVal ? `${cameraFrontVal} Selfie` : "Main & Front Camera",
         targetKey: specs.camera_main ? "camera_main" : specs.camera ? "camera" : "camera_front",
         icon: (
-          <svg viewBox="0 0 24 24" className="w-[24px] h-[24px] md:w-[26px] md:h-[26px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 24 24" className="w-[26px] h-[26px] md:w-[28px] md:h-[28px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
             <path d="M14.5 4h-5L8 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4l-1.5-3z" />
             <circle cx="12" cy="13" r="4" />
           </svg>
@@ -218,13 +218,12 @@
         subValue: storageVal ? `${storageVal} Storage` : "Internal Storage",
         targetKey: specs.memory ? "memory" : specs.ram ? "ram" : "storage",
         icon: (
-          <svg viewBox="0 0 24 24" className="w-[24px] h-[24px] md:w-[26px] md:h-[26px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2 7h20v9H2z" />
-            <path d="M4 16v2 M7 16v2 M10 16v2 M14 16v2 M17 16v2 M20 16v2" />
-            <rect x="4" y="9" width="3" height="4" rx="0.5" />
-            <rect x="8.5" y="9" width="3" height="4" rx="0.5" />
-            <rect x="13" y="9" width="3" height="4" rx="0.5" />
-            <rect x="17.5" y="9" width="3" height="4" rx="0.5" />
+          <svg viewBox="0 0 24 24" className="w-[26px] h-[26px] md:w-[28px] md:h-[28px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="7" width="20" height="9" rx="1" />
+            <rect x="4.5" y="9.5" width="3.5" height="4" rx="0.5" />
+            <rect x="10.25" y="9.5" width="3.5" height="4" rx="0.5" />
+            <rect x="16" y="9.5" width="3.5" height="4" rx="0.5" />
+            <path d="M6 16v2 M12 16v2 M18 16v2" />
           </svg>
         )
       },
@@ -234,7 +233,7 @@
         subValue: displayRefreshVal || "Refresh Rate / Res",
         targetKey: specs.display_size ? "display_size" : "display",
         icon: (
-          <svg viewBox="0 0 24 24" className="w-[24px] h-[24px] md:w-[26px] md:h-[26px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 24 24" className="w-[26px] h-[26px] md:w-[28px] md:h-[28px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
             <rect x="5" y="2" width="14" height="20" rx="3" />
             <rect x="10" y="3.5" width="4" height="1.2" rx="0.6" fill="currentColor" />
             <path d="M6 17l3-3.5 3 3.5 4-5.5 3 5.5" strokeWidth="1.5" />
@@ -247,7 +246,7 @@
         subValue: batteryChargingVal || "Charging Capacity",
         targetKey: specs.battery_capacity ? "battery_capacity" : "battery",
         icon: (
-          <svg viewBox="0 0 24 24" className="w-[24px] h-[24px] md:w-[26px] md:h-[26px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 24 24" className="w-[26px] h-[26px] md:w-[28px] md:h-[28px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
             <rect x="2" y="6" width="16" height="12" rx="2.5" />
             <path d="M20 10v4" strokeWidth="2.5" />
             <path d="M11 8.5L8.5 12h3l-1 4 4-4.5h-3l1-3z" fill="currentColor" />
@@ -260,7 +259,7 @@
         subValue: formattedPubgFps && chipsetVal ? chipsetVal : (formattedPubgFps ? "PUBG Performance" : "Processor Specs"),
         targetKey: specs.pubg_fps ? "pubg_fps" : "chipset",
         icon: (
-          <i className="ph-bold ph-game-controller text-[21px] md:text-[23px] leading-none" />
+          <i className="ph-bold ph-game-controller text-[23px] md:text-[25px] leading-none" />
         )
       }
     ]
@@ -273,14 +272,14 @@
             href={`#spec-row-${spec.targetKey}`}
             className="flex items-center gap-1 md:gap-2.5 pl-1.5 pr-2 py-1.5 md:py-2.5 md:px-3 w-full min-w-0"
           >
-            <div className="w-8 h-8 flex items-center justify-center shrink-0 text-black">
+            <div className="w-9 h-9 flex items-center justify-center shrink-0 text-black">
               {spec.icon}
             </div>
             <div className="min-w-0 flex-1 leading-tight">
-              <span className="block text-[12px] md:text-[14.5px] font-bold text-black truncate" title={spec.boldValue}>
+              <span className="block text-[13.5px] md:text-[15.5px] font-bold text-black truncate" title={spec.boldValue}>
                 {spec.boldValue}
               </span>
-              <span className="block text-[10px] md:text-[12px] font-semibold text-black/75 truncate mt-0.5" title={spec.subValue}>
+              <span className="block text-[11.5px] md:text-[13px] font-semibold text-black/75 truncate mt-0.5" title={spec.subValue}>
                 {spec.subValue}
               </span>
             </div>
@@ -302,7 +301,7 @@
         >
           {product.title}
           {isUpcoming && (
-            <span className="ml-2 inline-flex items-center justify-center text-[9px] md:text-[10px] leading-none font-bold uppercase tracking-wider bg-amber-500 text-black px-[6px] py-[3px] rounded-[3px] shadow-sm align-middle">
+            <span className="ml-2 inline-flex items-center justify-center text-[9px] md:text-[10px] leading-none font-bold uppercase tracking-wider bg-amber-500 text-white px-[6px] py-[3px] rounded-[3px] shadow-sm align-middle">
               Upcoming
             </span>
           )}

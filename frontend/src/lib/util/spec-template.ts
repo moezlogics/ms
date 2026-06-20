@@ -814,8 +814,7 @@ export function buildSpecGroupsFromTemplate(
       if (raw === null || typeof raw === "undefined") continue
       let value: string
       if (typeof raw === "boolean") {
-        if (!raw) continue
-        value = "Yes"
+        value = raw ? "Yes" : "No"
       } else {
         value = String(raw).trim()
         if (!value) continue
@@ -856,8 +855,7 @@ export function buildSpecGroupsFromTemplate(
     if (raw === null || typeof raw === "undefined") continue
     let value: string
     if (typeof raw === "boolean") {
-      if (!raw) continue
-      value = "Yes"
+      value = raw ? "Yes" : "No"
     } else {
       value = String(raw).trim()
       if (!value) continue

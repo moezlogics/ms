@@ -179,8 +179,8 @@ export default function ProductDescriptionTabs({
   }, [])
 
   const tabBtnCls = (isActive: boolean) =>
-    `relative px-4 py-2.5 text-sm font-semibold transition-colors ${
-      isActive ? "text-primary" : "text-ink/55 hover:text-ink"
+    `relative px-4 py-2.5 text-[14.5px] transition-colors ${
+      isActive ? "text-black font-extrabold" : "text-black/70 hover:text-black font-bold"
     }`
 
   return (
@@ -196,7 +196,7 @@ export default function ProductDescriptionTabs({
           >
             Specifications
             {active === "specs" && (
-              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
             )}
           </button>
         )}
@@ -210,7 +210,7 @@ export default function ProductDescriptionTabs({
           >
             Description
             {active === "english" && (
-              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
             )}
           </button>
         )}
@@ -225,7 +225,7 @@ export default function ProductDescriptionTabs({
           >
             اردو
             {active === "urdu" && (
-              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
             )}
           </button>
         )}
@@ -243,7 +243,7 @@ export default function ProductDescriptionTabs({
             </span>
           )}
           {active === "reviews" && (
-            <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
+            <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
           )}
         </button>
       </div>

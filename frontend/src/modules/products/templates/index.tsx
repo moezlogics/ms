@@ -393,12 +393,12 @@ const ProductTemplate = async ({
         {/* Mobile Layout (lg:hidden) */}
         <div className="lg:hidden">
           {/* Title Row */}
-          <div className="mb-3">
+          <div className="mb-1.5">
             <ProductInfo product={product} mode="title-only" />
           </div>
 
           {/* 50/50 Side-by-Side Gallery & Specs */}
-          <div className="grid grid-cols-2 gap-2.5 mb-4 items-start">
+          <div className="grid grid-cols-2 gap-1.5 mb-2 items-start">
             <div className="min-w-0">
               <ImageGallery
                 images={images}
