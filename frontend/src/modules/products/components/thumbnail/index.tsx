@@ -54,7 +54,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
   return (
     <div
       className={clx(
-        "relative w-full overflow-hidden bg-surface rounded-xl transition-shadow duration-300 group-hover:shadow-md",
+        "relative w-full overflow-hidden bg-surface rounded-[var(--radius-card)] transition-shadow duration-300 group-hover:shadow-md",
         className,
         // Use the aspectClass prop (callers pass it from site-settings),
         // else the legacy size/isFeatured heuristic. NOTE: do NOT read

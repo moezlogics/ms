@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { getProductPath } from "@lib/util/product"
@@ -49,10 +49,17 @@ export default function CompareInteractive({
 }: CompareInteractiveProps) {
   const { aspectClass: globalAspectClass } = useSiteSettings()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { replaceAll, add, remove } = useCompare()
 
   const [pickerOpen, setPickerOpen] = useState(false)
   const pickerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (searchParams.get("search") === "open") {
+      setPickerOpen(true)
+    }
+  }, [searchParams])
 
   const handles = products.map((p) => p.handle).filter(Boolean) as string[]
   const handlesKey = handles.join(",")

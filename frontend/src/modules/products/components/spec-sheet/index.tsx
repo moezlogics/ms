@@ -123,9 +123,7 @@ export default function SpecSheet({
 
               {/* Group header */}
               <div className="flex items-center gap-2 px-2.5 py-1.5 md:px-3.5 md:py-2 bg-surface/40 border-b border-line/55">
-                <span className="inline-flex items-center justify-center w-6.5 h-6.5 rounded bg-black text-white shrink-0 shadow-sm">
-                  <i className={`ph-bold ${g.icon.startsWith("ph-") ? g.icon : "ph-" + g.icon} text-[13.5px]`} aria-hidden />
-                </span>
+                <i className={`ph-bold ${g.icon.startsWith("ph-") ? g.icon : "ph-" + g.icon} text-primary text-[18px] shrink-0`} aria-hidden />
                 <h3 className="text-[12.5px] md:text-[13px] font-extrabold text-black tracking-wide uppercase">
                   {g.name}
                 </h3>
@@ -137,7 +135,7 @@ export default function SpecSheet({
                   <div
                     key={r.key}
                     id={`spec-row-${r.key}`}
-                    className="flex flex-row items-start gap-3 md:gap-4 px-2.5 py-[3px] md:px-3.5 md:py-[4px] border-b border-line/20 last:border-b-0 hover:bg-surface/10 transition-colors scroll-mt-24"
+                    className="flex flex-row items-start gap-3 md:gap-4 px-2.5 py-1.5 md:px-3.5 md:py-2.5 border-b border-line/20 last:border-b-0 hover:bg-surface/10 transition-colors scroll-mt-24"
                   >
                     <dt className="w-[90px] md:w-[130px] shrink-0 text-[10px] md:text-[11px] text-black font-bold uppercase tracking-wider mt-0.5">
                       {r.label}
@@ -176,9 +174,7 @@ export default function SpecSheet({
         <section className="flex flex-col border border-line/50 rounded-xl overflow-hidden bg-surface/5">
           {/* Group header */}
           <div className="flex items-center gap-2 px-2.5 py-1.5 md:px-3.5 md:py-2 bg-surface/40 border-b border-line/55">
-            <span className="inline-flex items-center justify-center w-6.5 h-6.5 rounded bg-black text-white shrink-0 shadow-sm">
-              <i className="ph-bold ph-package text-[13.5px]" aria-hidden />
-            </span>
+            <i className="ph-bold ph-package text-primary text-[18px] shrink-0" aria-hidden />
             <h3 className="text-[12.5px] md:text-[13px] font-extrabold text-black tracking-wide uppercase">
               What&apos;s in the Box
             </h3>

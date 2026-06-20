@@ -61,7 +61,7 @@ export default function MobileBrandsSidebar({ brands }: Props) {
             
             <div
               className={[
-                "w-[44px] h-[44px] small:w-[56px] small:h-[56px] flex items-center justify-center mb-1 transition-all relative shrink-0",
+                "w-[38px] h-[38px] small:w-[56px] small:h-[56px] flex items-center justify-center mb-1 transition-all relative shrink-0",
                 isAllActive 
                   ? "bg-primary/10 text-primary border border-primary/20 shadow-inner"
                   : "bg-surface-alt/70 text-ink/40 border border-line/40 group-hover:bg-primary/5 group-hover:text-primary group-hover:border-primary/20"
@@ -71,7 +71,7 @@ export default function MobileBrandsSidebar({ brands }: Props) {
               <i className="ph-bold ph-squares-four text-lg small:text-2xl" />
             </div>
             
-            <span className="text-[10px] small:text-[12.5px] leading-tight font-extrabold text-black group-hover:text-primary break-words max-w-[54px] small:max-w-[76px] transition-colors">
+            <span className="text-[10px] small:text-[12.5px] leading-tight font-bold text-black group-hover:text-primary break-words max-w-[54px] small:max-w-[76px] transition-colors">
               Shop All
             </span>
           </LocalizedClientLink>
@@ -106,7 +106,7 @@ export default function MobileBrandsSidebar({ brands }: Props) {
                 {/* Brand Logo Container */}
                 <div
                   className={[
-                    "w-[44px] h-[44px] small:w-[56px] small:h-[56px] overflow-hidden bg-white border flex items-center justify-center mb-1 transition-all relative shrink-0",
+                    "w-[38px] h-[38px] small:w-[56px] small:h-[56px] overflow-hidden bg-white border flex items-center justify-center mb-1 transition-all relative shrink-0",
                     isActive 
                       ? "border-primary/50 shadow-md scale-[1.05]" 
                       : "border-line/60 group-hover:border-primary/30 group-hover:shadow-sm"
@@ -129,7 +129,7 @@ export default function MobileBrandsSidebar({ brands }: Props) {
                 </div>
 
                 {/* Brand Label */}
-                <span className="text-[10px] small:text-[12.5px] leading-tight font-extrabold text-black group-hover:text-primary break-words max-w-[54px] small:max-w-[76px] transition-colors">
+                <span className="text-[10px] small:text-[12.5px] leading-tight font-bold text-black group-hover:text-primary break-words max-w-[54px] small:max-w-[76px] transition-colors">
                   {brand.name}
                 </span>
               </LocalizedClientLink>

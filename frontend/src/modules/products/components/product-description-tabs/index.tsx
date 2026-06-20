@@ -185,7 +185,7 @@ export default function ProductDescriptionTabs({
   }, [])
 
   const tabBtnCls = (isActive: boolean) =>
-    `relative px-4 py-2.5 text-[14.5px] transition-colors ${
+    `relative px-4 py-2.5 text-[13.5px] transition-colors ${
       isActive ? "text-black font-extrabold" : "text-black/70 hover:text-black font-bold"
     }`
 

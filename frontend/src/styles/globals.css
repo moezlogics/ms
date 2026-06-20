@@ -1159,3 +1159,19 @@ div:has(> select) {
 .rounded-search {
   border-radius: var(--radius-search) !important;
 }
+
+/* Related products mobile card layout adjustment */
+@media (max-width: 767.98px) {
+  .related-products-section [data-testid="product-title"] {
+    font-size: 10px !important;
+    line-height: 1.25 !important;
+  }
+  .related-products-section .product-card-wrapper span,
+  .related-products-section .product-card-wrapper div {
+    font-size: 10px !important;
+  }
+  .related-products-section .product-card-wrapper span.line-through,
+  .related-products-section .product-card-wrapper .line-through {
+    font-size: 9px !important;
+  }
+}

@@ -277,15 +277,15 @@ export default async function ComparePage({
             }}
           >
             {/* Header row with minimal product identifier */}
-            <div className="sticky top-0 z-10 bg-surface border-b border-line py-[3px] px-2.5">
+            <div className="sticky top-0 z-10 bg-surface border-b border-line py-2 px-2.5">
               <span className="text-[11px] font-extrabold uppercase tracking-widest text-black">
-                Specifications
+                Specs
               </span>
             </div>
             {products.map((p) => (
               <div
                 key={p.id}
-                className="sticky top-0 z-10 bg-surface border-b border-l border-line py-[3px] px-2.5 flex items-center gap-2"
+                className="sticky top-0 z-10 bg-surface border-b border-l border-line py-2 px-2.5 flex items-center gap-2"
               >
                 {p.thumbnail && (
                   /* eslint-disable-next-line @next/next/no-img-element */
@@ -302,7 +302,7 @@ export default async function ComparePage({
             ))}
 
             {/* Price Row */}
-            <div className="py-[3px] px-2.5 bg-bg border-b border-line text-xs font-extrabold uppercase tracking-wider text-black">
+            <div className="py-2 px-2.5 bg-bg border-b border-line text-xs font-extrabold uppercase tracking-wider text-black">
               Price
             </div>
             {products.map((p) => {
@@ -316,7 +316,7 @@ export default async function ComparePage({
               return (
                 <div
                   key={`${p.id}-price`}
-                  className="py-[3px] px-2.5 bg-bg border-b border-l border-line text-sm font-semibold text-black"
+                  className="py-2 px-2.5 bg-bg border-b border-l border-line text-sm font-semibold text-black"
                 >
                   <div className="flex flex-col gap-0.5">
                     <span className="text-black font-extrabold">
@@ -355,12 +355,10 @@ export default async function ComparePage({
                 {/* Section header banner */}
                 {sections.length > 1 || section.name !== "Specifications" ? (
                   <div
-                    className="px-2.5 py-[3px] bg-surface-alt border-b border-line text-[11.5px] font-extrabold tracking-widest uppercase text-black flex items-center gap-2"
+                    className="px-2.5 py-2 bg-surface-alt border-b border-line text-[11.5px] font-extrabold tracking-widest uppercase text-black flex items-center gap-2"
                     style={{ gridColumn: `1 / span ${cols + 1}` }}
                   >
-                    <span className="inline-flex items-center justify-center w-[22px] h-[22px] rounded bg-black text-white shrink-0 shadow-sm">
-                      <i className={`ph-bold ${section.icon.startsWith("ph-") ? section.icon : "ph-" + section.icon} text-[12px]`} aria-hidden />
-                    </span>
+                    <i className={`ph-bold ${section.icon.startsWith("ph-") ? section.icon : "ph-" + section.icon} text-primary text-[15px] shrink-0`} aria-hidden />
                     {section.name}
                   </div>
                 ) : null}
@@ -374,7 +372,7 @@ export default async function ComparePage({
                       style={{ display: "contents" }}
                     >
                       <div
-                        className={`py-[3px] px-2.5 border-b border-line text-xs font-bold ${
+                        className={`py-2 px-2.5 border-b border-line text-xs font-bold ${
                           differs ? "text-black font-extrabold" : "text-black"
                         } ${zebra ? "bg-bg" : "bg-surface/30"}`}
                       >
@@ -383,7 +381,7 @@ export default async function ComparePage({
                       {row.values.map((v, i) => (
                         <div
                           key={`row-${section.name}-${row.key}-${i}`}
-                          className={`py-[3px] px-2.5 border-b border-l border-line text-xs ${
+                          className={`py-2 px-2.5 border-b border-l border-line text-xs ${
                             differs ? "text-black font-semibold" : "text-black/85 font-medium"
                           } ${zebra ? "bg-bg" : "bg-surface/30"}`}
                         >

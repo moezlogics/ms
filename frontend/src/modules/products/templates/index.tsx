@@ -161,16 +161,13 @@ const ProductTemplate = async ({
   const similarSpecs = getSimilarSpecsProducts(product, allProducts, 4)
   const sameBrand = getSameBrandProducts(product, allProducts, brand?.handle, 4)
 
-  const renderInlineSection = (title: string, productsList: any[], iconClass: string) => {
+  const renderInlineSection = (title: string, productsList: any[]) => {
     if (!productsList || productsList.length === 0) return null
 
     return (
-      <div className="flex flex-col gap-3 my-4">
-        <div className="flex items-center gap-2 border-b border-line pb-1.5">
-          <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-black text-white shrink-0 shadow-sm">
-            <i className={`ph-bold ${iconClass} text-[13px]`} aria-hidden />
-          </span>
-          <h4 className="text-[12.5px] md:text-[13px] font-extrabold text-black uppercase tracking-wider">
+      <div className="flex flex-col gap-1.5 md:gap-3 my-1.5 md:my-4 related-products-section">
+        <div className="flex items-center gap-2 border-b border-line pb-1 md:pb-1.5">
+          <h4 className="text-[12.5px] md:text-[13px] font-extrabold text-primary uppercase tracking-wider">
             {title}
           </h4>
         </div>
@@ -537,9 +534,9 @@ const ProductTemplate = async ({
           reviewsSlot={
             <ProductReviews productId={product.id} productTitle={product.title} />
           }
-          similarBudgetSlot={renderInlineSection("Similar Budget Mobiles", similarBudget, "ph-hand-coins")}
-          similarSpecsSlot={renderInlineSection("Similar Specifications", similarSpecs, "ph-cpu")}
-          sameBrandSlot={renderInlineSection(`More from ${brand?.name || "Brand"}`, sameBrand, "ph-device-mobile")}
+          similarBudgetSlot={renderInlineSection("Similar Price", similarBudget)}
+          similarSpecsSlot={renderInlineSection("Similar Specs", similarSpecs)}
+          sameBrandSlot={renderInlineSection(`More from ${brand?.name || "Brand"}`, sameBrand)}
         />
       </div>
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useParams, usePathname } from "next/navigation"
+import { useParams, usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useCompare, COMPARE_MAX } from "./context"
 import CompareSearchPopover from "./compare-search-popover"
@@ -25,6 +25,7 @@ export default function CompareTray() {
     useCompare()
   const params = useParams() as { countryCode?: string }
   const pathname = usePathname() || ""
+  const router = useRouter()
   const countryCode = params?.countryCode || "us"
 
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -111,7 +112,7 @@ export default function CompareTray() {
             {items.map((it) => (
               <div
                 key={it.handle}
-                className={`relative shrink-0 w-11 rounded-xl overflow-hidden bg-surface border border-line group ${globalAspectClass}`}
+                className={`relative shrink-0 w-11 rounded-xl overflow-hidden bg-surface border border-line group ${globalAspectClass || "aspect-[3/4]"} h-auto`}
                 title={it.title}
               >
                 {it.thumbnail ? (
@@ -119,10 +120,10 @@ export default function CompareTray() {
                   <img
                     src={it.thumbnail}
                     alt={it.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain p-0.5 bg-white"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-ink/30">
+                  <div className="absolute inset-0 flex items-center justify-center text-ink/30">
                     <i className="ph ph-image text-base" aria-hidden />
                   </div>
                 )}
@@ -152,10 +153,16 @@ export default function CompareTray() {
             {!isFull && (
               <button
                 type="button"
-                onClick={() => setPickerOpen((v) => !v)}
+                onClick={() => {
+                  if (items.length >= 1) {
+                    router.push(`/${countryCode}/compare?h=${items.map(i => encodeURIComponent(i.handle)).join(",")}&search=open`)
+                  } else {
+                    setPickerOpen((v) => !v)
+                  }
+                }}
                 aria-expanded={pickerOpen}
                 aria-label="Add a product to compare"
-                className={`shrink-0 w-11 h-11 rounded-xl border-2 border-dashed flex items-center justify-center transition-colors ${
+                className={`shrink-0 w-11 rounded-xl border-2 border-dashed flex items-center justify-center transition-colors ${globalAspectClass || "aspect-[3/4]"} ${
                   pickerOpen
                     ? "border-primary text-primary bg-primary/5"
                     : "border-line text-ink/40 hover:border-primary/50 hover:text-primary"
