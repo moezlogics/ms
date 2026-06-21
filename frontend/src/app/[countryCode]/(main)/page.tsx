@@ -180,19 +180,20 @@ export default async function Home(props: {
             </ul>
           ))}
 
-          {/* Homepage Bottom Content */}
-          {settings.page_home_content && (
-            <div className="py-12 border-t border-line/45">
-              <div className="max-w-3xl mx-auto">
-                <div
-                  className="prose prose-sm md:prose-base max-w-none text-secondary leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: settings.page_home_content }}
-                />
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Homepage Bottom Content (Full-width below sidebar & products) */}
+      {settings.page_home_content && (
+        <div className="py-12 mt-8 border-t border-line/45">
+          <div className="max-w-3xl mx-auto">
+            <div
+              className="prose prose-sm md:prose-base max-w-none text-secondary leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: settings.page_home_content }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

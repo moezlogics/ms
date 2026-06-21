@@ -18,6 +18,8 @@ import { listProducts } from "@lib/data/products"
 import Thumbnail from "@modules/products/components/thumbnail"
 import { useSiteSettings } from "@lib/context/site-settings-context"
 
+const ZIZU_AVATAR = "https://cdn.zmobiles.pk/uploads/2026/06/7551268b-d645-4cbc-a802-ae3d94f96df4-aoFCInV_.webp"
+
 const STORAGE_KEY = "ai-chat:visitor-token"
 const SESSION_KEY = "ai-chat:session-id"
 
@@ -740,17 +742,20 @@ export default function ChatWidget({
             background: "var(--hex-bg)",
             border: "1px solid var(--hex-border)",
             animation: "chatTeaser 600ms cubic-bezier(0.16,1,0.3,1) forwards",
+            backdropFilter: "blur(12px)",
           }}
         >
-          <span
-            className="w-2 h-2 rounded-full shrink-0"
-            style={{ background: "var(--hex-primary)", animation: "chatPulse 2s ease-in-out infinite" }}
+          <img
+            src={ZIZU_AVATAR}
+            alt="Zizu"
+            className="w-7 h-7 rounded-full object-cover shrink-0"
+            style={{ border: "2px solid var(--hex-primary)" }}
           />
           <span
             className="text-xs font-semibold"
             style={{ color: "var(--hex-text)" }}
           >
-            Need help finding a phone? Ask me!
+            Hi! I'm Zizu — need help finding a phone?
           </span>
           <button
             type="button"
@@ -768,45 +773,54 @@ export default function ChatWidget({
       )}
 
       {/* Desktop Floating Trigger Button */}
-      <button
-        type="button"
-        aria-label={open ? "Close chat" : "Open chat"}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onClick={(e) => {
-          if (wasDragged) {
-            e.preventDefault()
-            return
-          }
-          setOpen((v) => !v)
-        }}
+      {/* Desktop Floating Trigger — Zizu Avatar with Glow Pulse */}
+      <div
+        className={`hidden small:flex fixed bottom-6 right-6 z-[59] items-center justify-center cursor-move ${
+          open ? "opacity-0 pointer-events-none scale-90" : "opacity-100 scale-100"
+        }`}
         style={{
           transform: `translate(${position.x}px, ${position.y}px)`,
           touchAction: "none",
           transition: isDragging
             ? "none"
             : "opacity 300ms ease, transform 300ms cubic-bezier(0.16,1,0.3,1)",
-          background: "var(--hex-primary)",
-          color: "var(--hex-primary-fg)",
         }}
-        className={`hidden small:flex fixed bottom-6 right-6 z-[59] w-14 h-14 rounded-full items-center justify-center shadow-xl hover:shadow-2xl cursor-move active:scale-90 transition-all ${
-          open ? "opacity-0 pointer-events-none scale-90" : "opacity-100 scale-100"
-        }`}
       >
-        <i className="ph-fill ph-headset text-[22px]" aria-hidden />
-        {hasUnread && !open && (
-          <span
-            className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2"
-            style={{
-              background: "var(--hex-danger)",
-              borderColor: "var(--hex-bg)",
-              animation: "chatPulse 2s ease-in-out infinite",
-            }}
-          />
-        )}
-      </button>
+        {/* Glow ring behind */}
+        <span className="zizu-trigger-glow" />
+        <button
+          type="button"
+          aria-label={open ? "Close chat" : "Open chat"}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          onClick={(e) => {
+            if (wasDragged) {
+              e.preventDefault()
+              return
+            }
+            setOpen((v) => !v)
+          }}
+          className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl active:scale-90 transition-all"
+          style={{
+            background: "var(--hex-primary)",
+            color: "var(--hex-primary-fg)",
+          }}
+        >
+          <i className="ph-fill ph-headset text-[22px]" aria-hidden />
+          {hasUnread && !open && (
+            <span
+              className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2"
+              style={{
+                background: "var(--hex-danger)",
+                borderColor: "var(--hex-bg)",
+                animation: "chatPulse 2s ease-in-out infinite",
+              }}
+            />
+          )}
+        </button>
+      </div>
 
       {/* Main Chat Sheet - only mount after first open */}
       {hasBeenOpened && (
@@ -829,31 +843,37 @@ export default function ChatWidget({
           style={{
             background: "var(--hex-bg)",
             border: "1px solid var(--hex-border)",
+            boxShadow: "0 25px 60px -12px rgba(0,0,0,0.25), 0 0 0 1px var(--hex-border)",
           }}
         >
-          {/* Header */}
+          {/* Header — Glassmorphism */}
           <div
             className="px-4 py-3 flex items-center gap-3 select-none shrink-0 relative z-10"
             style={{
               borderBottom: "1px solid var(--hex-border)",
-              background: "var(--hex-surface)",
+              background: "color-mix(in srgb, var(--hex-surface) 85%, transparent)",
+              backdropFilter: "blur(16px) saturate(1.5)",
+              WebkitBackdropFilter: "blur(16px) saturate(1.5)",
               paddingTop: "calc(12px + env(safe-area-inset-top, 0px))",
             }}
           >
-            {/* Avatar */}
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center relative shrink-0"
-              style={{
-                background: "var(--hex-primary)",
-                color: "var(--hex-primary-fg)",
-              }}
-            >
-              <i className="ph-fill ph-headset text-lg" aria-hidden />
+            {/* Zizu Avatar */}
+            <div className="relative shrink-0">
+              <img
+                src={ZIZU_AVATAR}
+                alt="Zizu"
+                className="w-10 h-10 rounded-full object-cover"
+                style={{
+                  border: "2px solid var(--hex-primary)",
+                  boxShadow: "0 0 12px color-mix(in srgb, var(--hex-primary) 30%, transparent)",
+                }}
+              />
               <span
                 className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2"
                 style={{
                   background: "var(--hex-success)",
                   borderColor: "var(--hex-surface)",
+                  boxShadow: "0 0 6px var(--hex-success)",
                 }}
               />
             </div>
@@ -863,7 +883,7 @@ export default function ChatWidget({
                 className="text-[15px] font-bold leading-none tracking-tight"
                 style={{ color: "var(--hex-text)" }}
               >
-                AI Shopping Assistant
+                Zizu
               </p>
               <p
                 className="text-[11px] font-semibold leading-none mt-1.5 flex items-center gap-1.5"
@@ -874,6 +894,7 @@ export default function ChatWidget({
                   style={{
                     background: "var(--hex-success)",
                     animation: "chatPulse 2s ease-in-out infinite",
+                    boxShadow: "0 0 4px var(--hex-success)",
                   }}
                 />
                 Online
@@ -988,7 +1009,8 @@ export default function ChatWidget({
               style={{
                 background: "var(--hex-primary)",
                 color: "var(--hex-primary-fg)",
-                animation: "chatSlideUp 250ms cubic-bezier(0.16,1,0.3,1) forwards",
+                animation: "chatBounceIn 350ms cubic-bezier(0.34,1.56,0.64,1) forwards",
+                boxShadow: "0 4px 16px color-mix(in srgb, var(--hex-primary) 30%, transparent)",
               }}
             >
               <i className="ph-bold ph-arrow-down text-[10px]" />
@@ -1011,44 +1033,51 @@ export default function ChatWidget({
                 className="flex flex-col py-2 space-y-5"
                 style={{ animation: "chatFadeIn 400ms ease forwards" }}
               >
-                {/* Welcome Banner */}
+                {/* Welcome Banner — Premium Zizu */}
                 <div
                   className="relative rounded-3xl p-6 text-center overflow-hidden"
                   style={{ background: "var(--hex-surface)" }}
                 >
-                  {/* Animated gradient orb */}
+                  {/* Animated gradient mesh orb */}
                   <div className="chat-orb" />
+                  <div className="zizu-welcome-glow" />
 
-                  <div className="flex flex-col items-center gap-3.5 relative z-10">
-                    <div
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center relative"
-                      style={{
-                        background: "var(--hex-primary)",
-                        color: "var(--hex-primary-fg)",
-                      }}
-                    >
-                      <i className="ph-fill ph-headset text-2xl" aria-hidden />
+                  <div className="flex flex-col items-center gap-4 relative z-10">
+                    {/* Zizu Avatar with glow ring */}
+                    <div className="relative" style={{ animation: "chatBounceIn 600ms cubic-bezier(0.34,1.56,0.64,1) forwards" }}>
+                      <img
+                        src={ZIZU_AVATAR}
+                        alt="Zizu"
+                        className="w-16 h-16 rounded-full object-cover"
+                        style={{
+                          border: "3px solid var(--hex-primary)",
+                          boxShadow: "0 0 20px color-mix(in srgb, var(--hex-primary) 35%, transparent), 0 4px 16px rgba(0,0,0,0.1)",
+                        }}
+                      />
                       <span
-                        className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2"
+                        className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-[2.5px] flex items-center justify-center"
                         style={{
                           background: "var(--hex-success)",
                           borderColor: "var(--hex-surface)",
+                          boxShadow: "0 0 8px var(--hex-success)",
                           animation: "chatPulse 2s ease-in-out infinite",
                         }}
-                      />
+                      >
+                        <i className="ph-bold ph-check text-[6px] text-white" />
+                      </span>
                     </div>
                     <div className="space-y-1.5">
                       <p
                         className="text-lg font-bold leading-tight"
                         style={{ color: "var(--hex-text)" }}
                       >
-                        Salaam! Main aap ki kaise madad karun?
+                        Salaam! Main <span style={{ color: "var(--hex-primary)" }}>Zizu</span> hun 👋
                       </p>
                       <p
                         className="text-[13px] leading-relaxed max-w-[300px] mx-auto"
                         style={{ color: "var(--hex-text-muted)" }}
                       >
-                        Product specs, comparison, order tracking, ya checkout rules ke mutabiq puchen.
+                        Phones, specs, prices, comparisons — jo bhi chahiye, puchh lo!
                       </p>
                     </div>
                   </div>
@@ -1098,7 +1127,7 @@ export default function ChatWidget({
                   </div>
                 )}
 
-                {/* Suggestion Cards */}
+                {/* Suggestion Cards — Premium with Shine Effect */}
                 <div className="flex flex-col gap-2.5 w-full">
                   <p
                     className="text-[11px] font-bold uppercase tracking-wider pl-1"
@@ -1112,22 +1141,28 @@ export default function ChatWidget({
                         key={s.title}
                         type="button"
                         onClick={() => onSend(s.prompt)}
-                        className="flex flex-col items-start gap-2 p-3 rounded-2xl text-left group transition-all active:scale-[0.97]"
+                        className="zizu-suggestion-card flex flex-col items-start gap-2 p-3 rounded-2xl text-left group transition-all active:scale-[0.97] relative overflow-hidden"
                         style={{
                           background: "var(--hex-surface)",
                           border: "1px solid var(--hex-border)",
-                          animationDelay: `${idx * 60}ms`,
-                          animation: "chatFadeIn 350ms ease forwards",
+                          animationDelay: `${idx * 80}ms`,
+                          animation: "chatBounceIn 400ms cubic-bezier(0.34,1.56,0.64,1) forwards",
                           opacity: 0,
                           animationFillMode: "forwards",
                         }}
                         onMouseEnter={(e) => {
                           (e.currentTarget as HTMLElement).style.borderColor = "var(--hex-primary)"
+                          ;(e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"
+                          ;(e.currentTarget as HTMLElement).style.boxShadow = "0 8px 24px -4px color-mix(in srgb, var(--hex-primary) 15%, transparent)"
                         }}
                         onMouseLeave={(e) => {
                           (e.currentTarget as HTMLElement).style.borderColor = "var(--hex-border)"
+                          ;(e.currentTarget as HTMLElement).style.transform = "translateY(0)"
+                          ;(e.currentTarget as HTMLElement).style.boxShadow = "none"
                         }}
                       >
+                        {/* Shine sweep overlay */}
+                        <span className="zizu-shine" />
                         <div
                           className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
                           style={{
@@ -1218,13 +1253,16 @@ export default function ChatWidget({
               style={{
                 background: "var(--hex-surface)",
                 border: "1px solid var(--hex-border)",
+                transition: "border-color 200ms ease, box-shadow 200ms ease",
               }}
               onFocus={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--hex-primary)"
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--hex-primary)";
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 3px color-mix(in srgb, var(--hex-primary) 15%, transparent)"
               }}
               onBlur={(e) => {
                 if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                  (e.currentTarget as HTMLElement).style.borderColor = "var(--hex-border)"
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--hex-border)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "none"
                 }
               }}
               onSubmit={(e) => {
@@ -1342,7 +1380,7 @@ export default function ChatWidget({
                 className="text-[9px] font-medium tracking-wider uppercase"
                 style={{ color: "var(--hex-text-muted)", opacity: 0.4 }}
               >
-                AI Assistant. Verify stock before payment.
+                Zizu AI · Verify stock before payment
               </span>
             </div>
           </div>
@@ -1354,6 +1392,11 @@ export default function ChatWidget({
         @keyframes chatFadeIn {
           from { opacity: 0; transform: translateY(6px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes chatBounceIn {
+          0% { opacity: 0; transform: scale(0.85) translateY(8px); }
+          60% { opacity: 1; transform: scale(1.03) translateY(-2px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
         }
         @keyframes chatSlideDown {
           from { opacity: 0; transform: translateY(-8px); }
@@ -1375,6 +1418,20 @@ export default function ChatWidget({
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
         }
+        @keyframes chatDotBounce {
+          0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+          40% { transform: translateY(-6px); opacity: 1; }
+        }
+        @keyframes chatGlowPulse {
+          0%, 100% {
+            box-shadow: 0 0 0 0 color-mix(in srgb, var(--hex-primary) 40%, transparent);
+            transform: scale(1);
+          }
+          50% {
+            box-shadow: 0 0 0 10px color-mix(in srgb, var(--hex-primary) 0%, transparent);
+            transform: scale(1.06);
+          }
+        }
         @keyframes chatOrbShift {
           0%, 100% {
             transform: translate(-50%, -50%) scale(1);
@@ -1382,7 +1439,7 @@ export default function ChatWidget({
           }
           33% {
             transform: translate(-40%, -60%) scale(1.15);
-            opacity: 0.12;
+            opacity: 0.14;
           }
           66% {
             transform: translate(-60%, -40%) scale(0.9);
@@ -1392,6 +1449,14 @@ export default function ChatWidget({
         @keyframes chatStepPulse {
           0%, 100% { opacity: 0.6; }
           50% { opacity: 1; }
+        }
+        @keyframes chatShineSwipe {
+          0% { transform: translateX(-100%) skewX(-15deg); }
+          100% { transform: translateX(300%) skewX(-15deg); }
+        }
+        @keyframes chatWelcomeGlow {
+          0%, 100% { opacity: 0.06; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 0.12; transform: translate(-50%, -50%) scale(1.2); }
         }
         .chat-orb {
           position: absolute;
@@ -1409,8 +1474,52 @@ export default function ChatWidget({
           animation: chatOrbShift 12s ease-in-out infinite;
           pointer-events: none;
         }
+        .zizu-welcome-glow {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 80%;
+          height: 80%;
+          border-radius: 50%;
+          background: radial-gradient(
+            circle,
+            var(--hex-primary) 0%,
+            transparent 60%
+          );
+          animation: chatWelcomeGlow 6s ease-in-out infinite;
+          pointer-events: none;
+        }
         .chat-msg-enter {
-          animation: chatFadeIn 280ms cubic-bezier(0.16,1,0.3,1) forwards;
+          animation: chatBounceIn 320ms cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        .zizu-trigger-glow {
+          position: absolute;
+          inset: -4px;
+          border-radius: 50%;
+          animation: chatGlowPulse 2.5s ease-in-out infinite;
+          pointer-events: none;
+        }
+        .zizu-shine {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 40%;
+          height: 100%;
+          background: linear-gradient(
+            105deg,
+            transparent 0%,
+            rgba(255,255,255,0.08) 40%,
+            rgba(255,255,255,0.15) 50%,
+            rgba(255,255,255,0.08) 60%,
+            transparent 100%
+          );
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 200ms ease;
+        }
+        .zizu-suggestion-card:hover .zizu-shine {
+          opacity: 1;
+          animation: chatShineSwipe 800ms ease forwards;
         }
         .chat-sheet-wrapper {
           position: fixed;
@@ -1424,16 +1533,16 @@ export default function ChatWidget({
           width: 100%;
           height: 100%;
           transform-origin: bottom right;
-          transition: opacity 250ms ease, transform 350ms cubic-bezier(0.16,1,0.3,1);
+          transition: opacity 280ms ease, transform 380ms cubic-bezier(0.34,1.56,0.64,1);
         }
         .chat-sheet-wrapper.chat-closed {
           opacity: 0;
-          transform: translateY(16px);
+          transform: scale(0.95) translateY(12px);
           pointer-events: none;
         }
         .chat-sheet-wrapper.chat-open {
           opacity: 1;
-          transform: translateY(0);
+          transform: scale(1) translateY(0);
           pointer-events: auto;
         }
         @media (min-width: 640px) {
@@ -1451,6 +1560,7 @@ export default function ChatWidget({
         }
         .chat-hdr-btn:hover {
           filter: brightness(0.95);
+          transform: scale(1.05);
         }
         .chat-hdr-btn:active {
           transform: scale(0.9);
@@ -1711,8 +1821,20 @@ function MessageRow({
 
   return (
     <div
-      className={`flex flex-col ${isUser ? "items-end" : "items-start"} gap-1.5 chat-msg-enter`}
+      className={`flex ${isUser ? "flex-col items-end" : "flex-row items-start"} gap-1.5 chat-msg-enter`}
     >
+      {/* Small Zizu avatar beside bot messages */}
+      {!isUser && (
+        <img
+          src={ZIZU_AVATAR}
+          alt="Zizu"
+          className="w-6 h-6 rounded-full object-cover shrink-0 mt-1"
+          style={{
+            border: "1.5px solid var(--hex-border)",
+          }}
+        />
+      )}
+      <div className={`flex flex-col ${isUser ? "items-end" : "items-start"} gap-1.5 flex-1 min-w-0`}>
       {/* Message Bubble */}
       <div
         onClick={handleSkip}
@@ -2015,6 +2137,10 @@ function MessageRow({
                   background: "var(--hex-surface)",
                   border: "1px solid var(--hex-border)",
                   color: "var(--hex-primary)",
+                  animationDelay: `${i * 60}ms`,
+                  animation: "chatBounceIn 350ms cubic-bezier(0.34,1.56,0.64,1) forwards",
+                  opacity: 0,
+                  animationFillMode: "forwards",
                 }}
               >
                 <i className="ph-bold ph-arrow-bend-up-right text-[10px]" aria-hidden />
@@ -2024,11 +2150,12 @@ function MessageRow({
           </div>
         )
       })()}
+      </div>
     </div>
   )
 }
 
-/* ─── ActionLog Component ─── */
+/* ─── ActionLog Component — Premium Typing Indicator ─── */
 function ActionLog({ pending }: { pending: boolean }) {
   const [step, setStep] = useState(0)
 
@@ -2059,28 +2186,38 @@ function ActionLog({ pending }: { pending: boolean }) {
   ]
 
   return (
-    <div
-      className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl text-xs font-medium w-fit max-w-[85%] chat-msg-enter"
-      style={{
-        background: "var(--hex-surface)",
-        border: "1px solid var(--hex-border)",
-        color: "var(--hex-text-muted)",
-      }}
-    >
-      {/* Animated dots */}
-      <div className="flex gap-1">
-        {[0, 1, 2].map((d) => (
-          <span
-            key={d}
-            className="w-2 h-2 rounded-full"
-            style={{
-              background: "var(--hex-text-muted)",
-              animation: `chatPulse 1.2s ease-in-out ${d * 200}ms infinite`,
-            }}
-          />
-        ))}
+    <div className="flex items-start gap-1.5">
+      {/* Small Zizu avatar beside typing indicator */}
+      <img
+        src={ZIZU_AVATAR}
+        alt="Zizu"
+        className="w-6 h-6 rounded-full object-cover shrink-0 mt-1"
+        style={{ border: "1.5px solid var(--hex-border)" }}
+      />
+      <div
+        className="flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-medium w-fit max-w-[85%] chat-msg-enter"
+        style={{
+          background: "var(--hex-surface)",
+          border: "1px solid var(--hex-border)",
+          color: "var(--hex-text-muted)",
+        }}
+      >
+        {/* Animated bouncing dots */}
+        <div className="flex gap-1">
+          {[0, 1, 2].map((d) => (
+            <span
+              key={d}
+              className="w-2 h-2 rounded-full"
+              style={{
+                background: "var(--hex-primary)",
+                animation: `chatDotBounce 1.4s ease-in-out ${d * 160}ms infinite`,
+                opacity: 0.7,
+              }}
+            />
+          ))}
+        </div>
+        <span>{steps[Math.min(step, steps.length - 1)].text}</span>
       </div>
-      <span>{steps[Math.min(step, steps.length - 1)].text}</span>
     </div>
   )
 }

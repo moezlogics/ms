@@ -12,7 +12,7 @@ import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 import { getBaseURL } from "@lib/util/env"
 import { getProductReviewStats, getProductReviewsForJsonLd } from "@lib/data/reviews"
-import { getBrandForProduct } from "@lib/data/brands"
+import { getBrandForProduct, getBrandByHandle } from "@lib/data/brands"
 import { buildAltMap } from "@lib/data/cdn-meta"
 import { buildSpecMap } from "@lib/util/spec-groups"
 import { getPreorderState } from "@lib/util/preorder"
@@ -179,7 +179,33 @@ const ProductTemplate = async ({
 
   const similarBudget = getSimilarBudgetProducts(product, allProducts, 4)
   const similarSpecs = getSimilarSpecsProducts(product, allProducts, 4)
-  const sameBrand = getSameBrandProducts(product, allProducts, brand?.handle, 4)
+
+  const brandHandle = brand?.handle || product.metadata?.brand
+  let brandProducts: any[] = []
+  if (brandHandle) {
+    try {
+      const brandData = await getBrandByHandle(brandHandle).catch(() => null)
+      if (brandData && brandData.product_ids?.length > 0) {
+        const targetIds = brandData.product_ids.filter((id) => id !== product.id).slice(0, 4)
+        if (targetIds.length > 0) {
+          const brandProductsResult = await listProducts({
+            queryParams: {
+              id: targetIds,
+              limit: targetIds.length,
+            } as any,
+            countryCode,
+          }).catch(() => null)
+          brandProducts = brandProductsResult?.response?.products || []
+        }
+      }
+    } catch (e) {
+      console.error("Failed to fetch brand products dynamically:", e)
+    }
+  }
+
+  const sameBrand = brandProducts.length > 0
+    ? brandProducts
+    : getSameBrandProducts(product, allProducts, brandHandle, 4)
 
   const renderInlineSection = (title: string, productsList: any[]) => {
     if (!productsList || productsList.length === 0) return null

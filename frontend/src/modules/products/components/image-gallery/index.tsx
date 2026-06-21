@@ -306,13 +306,19 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
                   : item.url
 
               return (
-                <button
+                <div
                   key={item.id || i}
-                  type="button"
-                  role="tab"
+                  role="button"
+                  tabIndex={0}
                   aria-selected={isActive}
                   onClick={() => handleThumbnailClick(i)}
-                  className={`relative shrink-0 w-10 h-10 md:w-16 md:h-16 rounded-none overflow-hidden bg-surface transition-all duration-200 ${
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      handleThumbnailClick(i)
+                    }
+                  }}
+                  className={`relative shrink-0 w-10 h-10 md:w-16 md:h-16 rounded-none overflow-hidden bg-surface transition-all duration-200 cursor-pointer ${
                     isActive
                       ? "ring-2 ring-primary"
                       : "ring-1 ring-line/50 opacity-60 hover:opacity-100"
@@ -345,7 +351,7 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
                       </div>
                     </div>
                   )}
-                </button>
+                </div>
               )
             })}
           </div>
