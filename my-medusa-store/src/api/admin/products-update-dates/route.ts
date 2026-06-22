@@ -3,13 +3,24 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   try {
     const manager = req.scope.resolve("__pg_connection__")
+    const { product_ids } = req.body as { product_ids?: string[] }
     
-    // Perform bulk update directly in the database for zero server/memory overhead
-    await manager.raw(`
-      UPDATE product 
-      SET created_at = NOW(), 
-          updated_at = NOW()
-    `)
+    if (product_ids && product_ids.length > 0) {
+      // Update selected products only
+      await manager.raw(`
+        UPDATE product 
+        SET created_at = NOW(), 
+            updated_at = NOW()
+        WHERE id = ANY(?)
+      `, [product_ids])
+    } else {
+      // Update all products
+      await manager.raw(`
+        UPDATE product 
+        SET created_at = NOW(), 
+            updated_at = NOW()
+      `)
+    }
 
     // Clear storefront cache if configured
     const storefrontUrl = process.env.STOREFRONT_URL
@@ -41,17 +52,14 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       }
     }
 
-    const responseBody: any = {
-      success: true,
-      message: "All product timestamps successfully updated to current time.",
+    res.status(200).json({ 
+      success: true, 
+      message: product_ids && product_ids.length > 0 
+        ? `Successfully updated timestamps for ${product_ids.length} selected product(s).` 
+        : "All product timestamps successfully updated to current time.",
       revalidated,
-    }
-
-    if (revalidateError) {
-      responseBody.revalidateError = revalidateError
-    }
-
-    res.status(200).json(responseBody)
+      ...(revalidateError ? { revalidateError } : {})
+    })
   } catch (error: any) {
     console.error("[products-update-dates] failed:", error)
     res.status(500).json({ success: false, error: error.message || "Failed to update product timestamps." })

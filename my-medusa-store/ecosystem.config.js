@@ -55,7 +55,6 @@ module.exports = {
         NODE_ENV: "production",
         PORT: 3062,
         MEDUSA_WORKER_MODE: "shared",
-        MEDUSA_ADMIN_DISABLE: "true",
         ...envConfig
       },
       instances: 1,

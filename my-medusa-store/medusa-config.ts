@@ -62,7 +62,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 export default defineConfig({
   admin: {
     path: '/app',
-    disable: false, 
+    disable: process.env.NODE_ENV === 'production', 
     vite: () => {
       return {
         server: {

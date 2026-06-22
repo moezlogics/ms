@@ -64,10 +64,12 @@
           month: "short",
           day: "numeric",
           year: "numeric",
+          timeZone: "Asia/Karachi",
         })} at ${updatedDate.toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
           hour12: true,
+          timeZone: "Asia/Karachi",
         })}`
       : null
 

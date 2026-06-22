@@ -135,12 +135,12 @@ export default function SpecSheet({
                   <div
                     key={r.key}
                     id={`spec-row-${r.key}`}
-                    className="flex flex-row items-start gap-3 md:gap-4 px-2.5 py-1.5 md:px-3.5 md:py-2.5 border-b border-line/20 last:border-b-0 hover:bg-surface/10 transition-colors scroll-mt-24"
+                    className="flex flex-row items-start gap-3 md:gap-4 px-2.5 py-1 md:px-3.5 md:py-2.5 border-b border-line/20 last:border-b-0 hover:bg-surface/10 transition-colors scroll-mt-24"
                   >
-                    <dt className="w-[90px] md:w-[130px] shrink-0 text-[10px] md:text-[11px] text-black font-bold uppercase tracking-wider mt-0.5">
+                    <dt className="w-[90px] md:w-[130px] shrink-0 text-[11px] md:text-[11px] text-black font-bold uppercase tracking-wider mt-0.5">
                       {r.label}
                     </dt>
-                    <dd className="text-[12.5px] md:text-[13.5px] text-black font-semibold text-left flex-1 min-w-0 break-words">
+                    <dd className="text-[13.5px] md:text-[13.5px] text-black font-semibold text-left flex-1 min-w-0 break-words">
                       {r.value}
                     </dd>
                   </div>
