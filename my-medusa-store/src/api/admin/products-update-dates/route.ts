@@ -6,19 +6,31 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     const { product_ids } = req.body as { product_ids?: string[] }
     
     if (product_ids && product_ids.length > 0) {
-      // Update selected products only
+      // Update selected products while preserving their relative created_at order
       await manager.raw(`
-        UPDATE product 
-        SET created_at = NOW(), 
-            updated_at = NOW()
-        WHERE id = ANY(?)
+        WITH ordered_products AS (
+          SELECT id, ROW_NUMBER() OVER (ORDER BY created_at ASC) as row_num
+          FROM product
+          WHERE id = ANY(?)
+        )
+        UPDATE product
+        SET created_at = NOW() + (ordered_products.row_num * INTERVAL '1 second'),
+            updated_at = NOW() + (ordered_products.row_num * INTERVAL '1 second')
+        FROM ordered_products
+        WHERE product.id = ordered_products.id
       `, [product_ids])
     } else {
-      // Update all products
+      // Update all products while preserving their relative created_at order
       await manager.raw(`
-        UPDATE product 
-        SET created_at = NOW(), 
-            updated_at = NOW()
+        WITH ordered_products AS (
+          SELECT id, ROW_NUMBER() OVER (ORDER BY created_at ASC) as row_num
+          FROM product
+        )
+        UPDATE product
+        SET created_at = NOW() + (ordered_products.row_num * INTERVAL '1 second'),
+            updated_at = NOW() + (ordered_products.row_num * INTERVAL '1 second')
+        FROM ordered_products
+        WHERE product.id = ordered_products.id
       `)
     }
 
