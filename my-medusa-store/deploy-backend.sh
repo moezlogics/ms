@@ -72,6 +72,9 @@ mv "$BUILD_DIR/.medusa/server" "$ACTIVE_DIR/.medusa/server"
 if command -v rsync >/dev/null 2>&1; then
   rsync -a --exclude='node_modules' --exclude='.medusa' --exclude='logs' "$BUILD_DIR/" "$ACTIVE_DIR/"
 else
+  echo "rsync not found. Copying build outputs manually..."
+  cp -rf "$BUILD_DIR/admin-static" "$ACTIVE_DIR/" 2>/dev/null || true
+  cp -rf "$BUILD_DIR/src" "$ACTIVE_DIR/" 2>/dev/null || true
   cp -f "$BUILD_DIR/package.json" "$ACTIVE_DIR/" 2>/dev/null || true
   cp -f "$BUILD_DIR/medusa-config.ts" "$ACTIVE_DIR/" 2>/dev/null || true
 fi
