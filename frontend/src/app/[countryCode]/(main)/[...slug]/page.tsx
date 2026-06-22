@@ -140,6 +140,14 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       ...(product.categories?.[0]?.name && {
         "product:category": product.categories[0].name,
       }),
+      // Real system timestamps — ensures Google indexes the actual
+      // creation/modification dates instead of spec metadata (launch_date).
+      ...(product.created_at && {
+        "article:published_time": new Date(product.created_at).toISOString(),
+      }),
+      ...(product.updated_at && {
+        "article:modified_time": new Date(product.updated_at).toISOString(),
+      }),
     }
 
     return {

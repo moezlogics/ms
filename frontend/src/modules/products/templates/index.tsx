@@ -382,6 +382,12 @@ const ProductTemplate = async ({
       ? { "@type": "Brand", name: product.collection.title }
       : undefined,
     offers: offer,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": productUrl,
+      ...(product.created_at && { datePublished: new Date(product.created_at).toISOString() }),
+      ...(product.updated_at && { dateModified: new Date(product.updated_at).toISOString() }),
+    },
   }
 
   // additionalProperty — surfaces structured specs to Google Shopping
