@@ -15,7 +15,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     const storefrontUrl = process.env.STOREFRONT_URL
     const secret = process.env.REVALIDATE_SECRET
     let revalidated = false
-    let revalidateError = null
+    let revalidateError: string | null = null
 
     if (storefrontUrl && secret) {
       try {
@@ -41,12 +41,17 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       }
     }
 
-    res.status(200).json({ 
-      success: true, 
+    const responseBody: any = {
+      success: true,
       message: "All product timestamps successfully updated to current time.",
       revalidated,
-      ...(revalidateError && { revalidateError })
-    })
+    }
+
+    if (revalidateError) {
+      responseBody.revalidateError = revalidateError
+    }
+
+    res.status(200).json(responseBody)
   } catch (error: any) {
     console.error("[products-update-dates] failed:", error)
     res.status(500).json({ success: false, error: error.message || "Failed to update product timestamps." })
