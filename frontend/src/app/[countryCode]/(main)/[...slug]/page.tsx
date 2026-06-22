@@ -144,9 +144,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       // creation/modification dates instead of spec metadata (launch_date).
       ...(product.created_at && {
         "article:published_time": new Date(product.created_at).toISOString(),
+        "publish-date": new Date(product.created_at).toISOString(),
+        "pubdate": new Date(product.created_at).toISOString(),
+        "date": new Date(product.created_at).toISOString(),
       }),
       ...(product.updated_at && {
         "article:modified_time": new Date(product.updated_at).toISOString(),
+        "last-modified": new Date(product.updated_at).toISOString(),
+        "revised": new Date(product.updated_at).toISOString(),
+        "og:updated_time": new Date(product.updated_at).toISOString(),
       }),
     }
 

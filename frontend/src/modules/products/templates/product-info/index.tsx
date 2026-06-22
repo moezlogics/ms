@@ -58,6 +58,19 @@
       listBrands().catch(() => []),
     ])
 
+    const updatedDate = product.updated_at ? new Date(product.updated_at) : null
+    const formattedUpdated = updatedDate
+      ? `Updated: ${updatedDate.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })} at ${updatedDate.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        })}`
+      : null
+
     if (mode === "top") {
       const categoryChain = buildCategoryChain(primaryCategory)
       const brandChain = brand ? (brand.parent_id ? [brands?.find(b => b?.id === brand.parent_id), brand].filter(Boolean) : [brand]) : []
@@ -142,12 +155,22 @@
           )}
           </div>
 
-          {hasRating && (
+          {(hasRating || formattedUpdated) && (
             <div className="flex items-center gap-3.5 flex-wrap">
-              <StarRating
-                rating={stats!.averageRating}
-                count={stats!.reviewCount}
-              />
+              {hasRating && (
+                <StarRating
+                  rating={stats!.averageRating}
+                  count={stats!.reviewCount}
+                />
+              )}
+              {formattedUpdated && (
+                <>
+                  {hasRating && <span className="text-ink/25 text-[12px]" aria-hidden>•</span>}
+                  <span className="text-[12px] text-ink/55 font-medium">
+                    {formattedUpdated}
+                  </span>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -307,7 +330,7 @@
           )}
         </h1>
 
-        {(hasBrand || hasRating) && (
+        {(hasBrand || hasRating || formattedUpdated) && (
           <div className="flex items-center gap-3.5 flex-wrap">
             {hasBrand && (() => {
               const parentBrand = brand!.parent_id ? brands?.find(b => b?.id === brand!.parent_id) : null
@@ -339,6 +362,14 @@
                 rating={stats!.averageRating}
                 count={stats!.reviewCount}
               />
+            )}
+            {formattedUpdated && (
+              <>
+                {(hasBrand || hasRating) && <span className="text-ink/25 text-[12px]" aria-hidden>•</span>}
+                <span className="text-[12px] text-ink/55 font-medium">
+                  {formattedUpdated}
+                </span>
+              </>
             )}
           </div>
         )}

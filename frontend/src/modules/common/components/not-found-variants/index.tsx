@@ -19,41 +19,42 @@ export default function NotFoundVariants() {
 
         <div className="max-w-md w-full text-center relative z-10 flex flex-col items-center">
           
-          {/* Zizu Floating Astronaut Illustration */}
-          <div className="relative w-44 h-44 sm:w-52 sm:h-52 flex items-center justify-center select-none">
-            {/* Glowing orbital ring */}
-            <div className="absolute inset-0 rounded-full border-2 border-dashed border-primary/20 animate-[spin_24s_linear_infinite]" />
-            <div 
-              className="absolute w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-primary/15 via-accent/5 to-transparent blur-xl"
-              style={{ animation: "waFloat 4s ease-in-out infinite" }}
-            />
+          {/* Big Creative 404 Layout with Zizu as the '0' */}
+          <div className="flex items-center justify-center gap-3.5 sm:gap-6 select-none font-sans tracking-tight">
+            {/* First "4" */}
+            <span className="text-[110px] sm:text-[160px] font-black text-ink leading-none opacity-90">
+              4
+            </span>
 
-            {/* Float wrapper */}
-            <div 
-              className="relative w-[70%] h-[70%]"
-              style={{ animation: "waFloat 5s ease-in-out infinite" }}
-            >
-              {/* Circuit board corner decorations */}
-              <div className="absolute -top-3 -left-3 w-5 h-5 border-t-2 border-l-2 border-primary/40 rounded-tl-xl" />
-              <div className="absolute -bottom-3 -right-3 w-5 h-5 border-b-2 border-r-2 border-accent/40 rounded-br-xl" />
-
-              {/* Zizu avatar with astronaut helmet shape */}
-              <div className="w-full h-full rounded-full relative overflow-hidden p-1 bg-surface border-2 border-line shadow-2xl">
-                <img
-                  src={ZIZU_AVATAR}
-                  alt="Zizu"
-                  className="w-full h-full rounded-full object-cover"
-                />
-              </div>
-
-              {/* 404 LOST Badge */}
+            {/* Zizu Floating Astronaut Illustration (acting as the "0") */}
+            <div className="relative w-28 h-28 sm:w-40 sm:h-40 flex items-center justify-center">
+              {/* Glowing orbital ring */}
+              <div className="absolute inset-0 rounded-full border-2 border-dashed border-primary/20 animate-[spin_24s_linear_infinite]" />
               <div 
-                className="absolute -bottom-1 -left-1 bg-rose-500 text-white font-mono text-[9px] sm:text-xs font-bold px-2 py-0.5 rounded-full shadow-lg border border-surface tracking-wide"
-                style={{ animation: "waPulse 1.8s ease-in-out infinite" }}
+                className="absolute w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-primary/15 via-accent/5 to-transparent blur-xl"
+                style={{ animation: "waFloat 4s ease-in-out infinite" }}
+              />
+
+              {/* Float wrapper */}
+              <div 
+                className="relative w-[75%] h-[75%]"
+                style={{ animation: "waFloat 5s ease-in-out infinite" }}
               >
-                404 LOST
+                {/* Zizu avatar with astronaut helmet shape */}
+                <div className="w-full h-full rounded-full relative overflow-hidden p-1 bg-surface border-2 border-line shadow-2xl">
+                  <img
+                    src={ZIZU_AVATAR}
+                    alt="Zizu"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                </div>
               </div>
             </div>
+
+            {/* Second "4" */}
+            <span className="text-[110px] sm:text-[160px] font-black text-ink leading-none opacity-90">
+              4
+            </span>
           </div>
 
           {/* Heading and text info */}
@@ -93,10 +94,6 @@ export default function NotFoundVariants() {
         @keyframes waFloat {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
-        }
-        @keyframes waPulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.85; transform: scale(0.96); }
         }
       `}</style>
     </>
