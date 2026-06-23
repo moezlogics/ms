@@ -301,10 +301,10 @@
               {spec.icon}
             </div>
             <div className="min-w-0 flex-1 leading-tight">
-              <span className="block text-[13.5px] md:text-[15.5px] font-bold text-black truncate" title={spec.boldValue}>
+              <span className="block text-[14px] md:text-[15px] font-bold text-black truncate" title={spec.boldValue}>
                 {spec.boldValue}
               </span>
-              <span className="block text-[11.5px] md:text-[13px] font-semibold text-black/75 truncate mt-0.5" title={spec.subValue}>
+              <span className="block text-[12px] md:text-[13px] font-semibold text-black/75 truncate mt-0.5" title={spec.subValue}>
                 {spec.subValue}
               </span>
             </div>

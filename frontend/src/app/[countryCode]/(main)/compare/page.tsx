@@ -277,7 +277,7 @@ export default async function ComparePage({
             }}
           >
             {/* Header row with minimal product identifier */}
-            <div className="sticky top-0 z-10 bg-surface border-b border-line py-2 px-2.5">
+            <div className="sticky top-0 z-10 bg-surface border-b border-line py-1 md:py-1.5 px-2.5">
               <span className="text-[11px] font-extrabold uppercase tracking-widest text-black">
                 Specs
               </span>
@@ -285,7 +285,7 @@ export default async function ComparePage({
             {products.map((p) => (
               <div
                 key={p.id}
-                className="sticky top-0 z-10 bg-surface border-b border-l border-line py-2 px-2.5 flex items-center gap-2"
+                className="sticky top-0 z-10 bg-surface border-b border-l border-line py-1 md:py-1.5 px-2.5 flex items-center gap-2"
               >
                 {p.thumbnail && (
                   /* eslint-disable-next-line @next/next/no-img-element */
@@ -302,7 +302,7 @@ export default async function ComparePage({
             ))}
 
             {/* Price Row */}
-            <div className="py-2 px-2.5 bg-bg border-b border-line text-xs font-extrabold uppercase tracking-wider text-black">
+            <div className="py-1 md:py-1.5 px-2.5 bg-bg border-b border-line text-xs font-extrabold uppercase tracking-wider text-black">
               Price
             </div>
             {products.map((p) => {
@@ -316,7 +316,7 @@ export default async function ComparePage({
               return (
                 <div
                   key={`${p.id}-price`}
-                  className="py-2 px-2.5 bg-bg border-b border-l border-line text-sm font-semibold text-black"
+                  className="py-1 md:py-1.5 px-2.5 bg-bg border-b border-l border-line text-sm font-bold text-black"
                 >
                   <div className="flex flex-col gap-0.5">
                     <span className="text-black font-extrabold">
@@ -372,7 +372,7 @@ export default async function ComparePage({
                       style={{ display: "contents" }}
                     >
                       <div
-                        className={`py-2 px-2.5 border-b border-line text-xs font-bold ${
+                        className={`py-1 md:py-1.5 px-2.5 border-b border-line text-[12.5px] font-bold ${
                           differs ? "text-black font-extrabold" : "text-black"
                         } ${zebra ? "bg-bg" : "bg-surface/30"}`}
                       >
@@ -381,8 +381,8 @@ export default async function ComparePage({
                       {row.values.map((v, i) => (
                         <div
                           key={`row-${section.name}-${row.key}-${i}`}
-                          className={`py-2 px-2.5 border-b border-l border-line text-xs ${
-                            differs ? "text-black font-semibold" : "text-black/85 font-medium"
+                          className={`py-1 md:py-1.5 px-2.5 border-b border-l border-line text-[13px] md:text-[13.5px] ${
+                            differs ? "text-black font-bold" : "text-black/85 font-semibold"
                           } ${zebra ? "bg-bg" : "bg-surface/30"}`}
                         >
                           {v || <span className="text-black/35">—</span>}
