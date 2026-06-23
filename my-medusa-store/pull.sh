@@ -4,7 +4,7 @@ cd .deploy-source
 git pull origin main
 cd ..
 
-echo "=== Syncing files to my-medusa-store/ ==="
+echo "=== Syncing files to Root ==="
 rsync -av --delete \
   --exclude='.deploy-source/' \
   --exclude='.git/' \
@@ -12,9 +12,19 @@ rsync -av --delete \
   --exclude='pull.sh' \
   --exclude='admin-static/' \
   --exclude='node_modules/' \
+  --exclude='.medusa/' \
   --exclude='dist/' \
   --exclude='ecosystem.config.js' \
   --exclude='logs/' \
-  .deploy-source/my-medusa-store/ my-medusa-store/
+  --exclude='_backups/' \
+  .deploy-source/my-medusa-store/ .
+
+echo "=== Running Deploy script ==="
+if [ -f "./deploy-backend.sh" ]; then
+  chmod +x ./deploy-backend.sh
+  ./deploy-backend.sh
+else
+  echo "No deploy-backend.sh found. Please build manually or restart PM2."
+fi
 
 echo "=== Backend Updated Successfully ==="
