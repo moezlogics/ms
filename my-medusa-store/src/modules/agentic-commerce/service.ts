@@ -72,7 +72,7 @@ ELECTRONICS STORE — DOMAIN GUIDANCE
   Soundcore, Edifier, Audionic; Canon, Nikon, GoPro, DJI; Logitech,
   Razer, Corsair, HyperX, SteelSeries. Use these names ONLY when they
   appear in search_products results — never invent stock.
-- Gaming Phones: In Pakistan, "gaming phone" means devices supporting high-end gaming (90FPS or 120FPS in PUBG, refresh rate 120Hz/144Hz/165Hz, high-end chipsets). When asked for gaming phones, ALWAYS search with spec_contains: ["90FPS"] or ["120FPS"] or ["120Hz"]. NEVER suggest budget 30FPS/40FPS phones or low-end devices.
+- Gaming Phones: In Pakistan, "gaming phone" means devices that run PUBG smoothly (90FPS or 120FPS) on high-end chipsets. When asked for gaming / high-FPS phones, search the pubg_fps spec — spec_contains: ["120FPS"] (or ["90FPS"]) — NOT the refresh rate. Only use ["120Hz"] when the user specifically asks about the display refresh rate. NEVER suggest budget 30FPS/40FPS phones for gaming.
 - Camera Phones: "Camera phone" means devices optimized for photography with OIS (Optical Image Stabilization), Leica/Zeiss lenses, or high megapixel cameras. Search with spec_contains: ["OIS"] or ["Leica"] or ["Zeiss"] or ["50MP"] or ["108MP"] or ["200MP"].
 - Spec talk: when searching or discussing specifications, match these exact keys and values (stored under metadata.specs):
   * RAM (memory): "2GB RAM", "4GB RAM", "6GB RAM", "8GB RAM", "12GB RAM", "16GB RAM", "3GB RAM" (always search with spec_contains e.g. ["8GB", "RAM"])
@@ -195,6 +195,10 @@ GOLDEN RULE — ACT, DON'T INSTRUCT
   and prepare the order. You are the one doing the work.
 
 SEARCH FIRST — NEVER ANSWER FROM MEMORY:
+- NEVER STALL. Your tools run INSTANTLY and silently. Do NOT reply with
+  "main dhoond raha hoon", "thoda wait karein", "let me check / search",
+  or any promise to look it up. ALWAYS call the tool in THIS turn and
+  reply with the real results in the SAME message.
 - The moment a user mentions a product, type, brand, budget, or asks
   "what do you sell / kya products hain", CALL THE TOOL IMMEDIATELY — do
   NOT ask a clarifying question first (e.g. asking for their budget before searching is forbidden!), and NEVER list products/categories
@@ -202,13 +206,31 @@ SEARCH FIRST — NEVER ANSWER FROM MEMORY:
 - "best phone under 50000" → search_products(query: "mobile", max_price: 50000).
   Use a CATEGORY/TYPE word ("mobile", "laptop", "tv") or brand — not the
   whole sentence — because products are titled by model.
-- SPEC QUERIES — use spec_contains (reads each product's REAL saved specs):
-  "8GB RAM wale mobile batao" → search_products(query: "mobile", spec_contains: ["8GB","RAM"]).
+- SPEC QUERIES — use spec_contains (it reads each product's REAL saved
+  specs). Pass ONE value per attribute and DON'T mix unrelated specs in a
+  single search — all terms are AND-ed, so combining them returns almost
+  nothing:
+  "8GB RAM wale mobile" → search_products(query: "mobile", spec_contains: ["8GB","RAM"]).
   "5000mAh battery wale" → spec_contains: ["5000mAh"].
-  "AMOLED 120Hz phone" → spec_contains: ["AMOLED","120Hz"].
-  "gaming phone" (high-performance/smooth PUBG) → spec_contains: ["90FPS"] or ["120FPS"] or ["120Hz"]. NEVER suggest budget 30FPS/40FPS phones for gaming.
-  "camera phone" (high-quality photography) → spec_contains: ["OIS"] or ["Leica"] or ["Zeiss"] or ["50MP"] or ["108MP"] or ["200MP"].
-  Then present the matches as a clear list (name + the matching spec + price). If none match, say so honestly and suggest the closest options — do NOT claim a phone has a spec the result doesn't show.
+  "120Hz / 120 hertz display" → spec_contains: ["120Hz"].
+  "120 FPS / 120fps / PUBG 120 / gaming smooth" → spec_contains: ["120FPS"]
+    — FPS lives in the pubg_fps spec, which is DIFFERENT from the 120Hz
+    refresh rate. Do NOT add "120Hz" unless the user explicitly wants both.
+  "90 FPS gaming" → ["90FPS"];  "AMOLED" → ["AMOLED"];
+  "camera phone" → ["OIS"] or ["50MP"] or ["108MP"] (pick ONE).
+  "256GB storage" → ["256GB"];  "Snapdragon / Dimensity / Helio chip" → ["Snapdragon"] (the chipset name);
+  "5G phone" → ["5G"];  "PTA approved" → ["PTA"];  "wireless charging" → ["wireless charging"];
+  "65W fast charging" → ["65W"];  "6.7 inch display" → ["6.7"];  "eSIM" → ["eSIM"].
+  spec_contains works for ANY field the product saved — RAM, storage,
+  chipset, CPU, GPU, display size, refresh rate, FPS, camera MP, OIS,
+  battery mAh, charging, 5G, PTA, OS, colours, sensors, etc. Use the
+  user's own number/keyword as the term.
+  Every result carries a "specs" object with the product's REAL values
+  (memory, refresh_rate, pubg_fps, camera_main, battery_capacity, etc).
+  Quote specs ONLY from that object — never invent one. Present matches as
+  a short list (name + the matching spec + price). If nothing matches, say
+  so honestly and offer the closest options — do NOT claim a spec a result
+  doesn't show.
 - "kya products hain / what do you sell" → call browse_categories (and/or
   browse_brands) and report ONLY what they return.
 - If the user pastes a PRODUCT URL (e.g. https://zmobiles.pk/category/some-product-handle), the LAST path segment is the product handle →
@@ -827,6 +849,26 @@ class AgenticCommerceService extends MedusaService({
     let messages = [...initialMessages]
     const aggregateMetadata: Record<string, any> = {}
 
+    // The customer's latest message — used by the anti-stall guard to
+    // decide whether a tool-less "let me search…" reply needs a forced
+    // retry.
+    let lastUserText = ""
+    for (let i = initialMessages.length - 1; i >= 0; i--) {
+      const m = initialMessages[i]
+      if (m?.role === "user") {
+        lastUserText =
+          typeof m.content === "string"
+            ? m.content
+            : Array.isArray(m.content)
+            ? m.content.map((c: any) => c?.text || "").join(" ")
+            : ""
+        break
+      }
+    }
+    let toolsUsed = false
+    let stallRetried = false
+    let forceToolChoice = false
+
     for (let round = 0; round < 5; round++) {
       const res = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
@@ -838,7 +880,10 @@ class AgenticCommerceService extends MedusaService({
           model,
           messages,
           tools: TOOLS,
-          tool_choice: "auto",
+          // Normally the model decides; the anti-stall guard flips this to
+          // "required" for exactly ONE retry when the model promised to
+          // search but didn't actually call a tool.
+          tool_choice: forceToolChoice ? "required" : "auto",
           ...(isGpt5
             ? // `minimal` reasoning = gpt-5's fastest mode. This is a
               // tool-calling/formatting chatbot, not a hard-reasoning task,
@@ -850,6 +895,8 @@ class AgenticCommerceService extends MedusaService({
             : { temperature: 0.4, max_tokens: 600 }),
         }),
       })
+      // One-shot: the forced tool choice only applies to this round.
+      forceToolChoice = false
 
       if (!res.ok) {
         const text = await res.text().catch(() => "")
@@ -868,6 +915,31 @@ class AgenticCommerceService extends MedusaService({
         // message. An empty reply persisted to the DB used to crash the
         // storefront widget (null .split). Always send something useful.
         const finalReply = (msg.content || "").trim()
+
+        // ANTI-STALL: gpt-5-mini on "minimal" reasoning sometimes replies
+        // with a promise to search ("main 120FPS phones dhoondh raha hoon,
+        // thoda wait karein") WITHOUT calling a tool — so the user gets a
+        // stall and never sees products. If that happens on a catalog/spec
+        // question, force exactly ONE tool-calling retry.
+        const STALL_RE =
+          /(dhoond|dhundh|talash|search(ing| kar)|let me (check|search|look)|looking (it )?up|abhi (dekh|laata|nikaal|check)|nikaal(ta|ke|ti) hoon|laata hoon|check kar(ta|ke) hoon|catalog (mein|me)\s|list (bana|tayyar) kar)/i
+        if (
+          !toolsUsed &&
+          !stallRetried &&
+          finalReply &&
+          STALL_RE.test(finalReply) &&
+          this.looksLikeCatalogQuery(lastUserText)
+        ) {
+          stallRetried = true
+          forceToolChoice = true
+          messages.push({
+            role: "system",
+            content:
+              "You replied WITHOUT calling a tool, but the customer asked about products/specs. Your tools run instantly and silently — NEVER tell the user to wait or that you are searching. Call search_products NOW (use spec_contains for spec queries such as RAM, refresh rate, FPS, battery, camera) and answer with the REAL results in this same turn.",
+          })
+          continue
+        }
+
         return {
           reply:
             finalReply ||
@@ -879,6 +951,7 @@ class AgenticCommerceService extends MedusaService({
       // Append assistant message that requested tools, then execute and
       // append each tool result as role="tool".
       messages.push(msg)
+      toolsUsed = true
       
       const toolResults = await Promise.all(
         toolCalls.map(async (call: any) => {
@@ -928,7 +1001,10 @@ class AgenticCommerceService extends MedusaService({
         messages.push({
           role: "tool",
           tool_call_id: callId,
-          content: JSON.stringify(result).slice(0, 4000),
+          // Bumped from 4000: product results now carry a real `specs`
+          // object per item, so the model needs the extra room to read
+          // them (a too-tight cap truncated the JSON → broken tool result).
+          content: JSON.stringify(result).slice(0, 16000),
         })
       }
     }
@@ -1202,6 +1278,65 @@ class AgenticCommerceService extends MedusaService({
   }
 
   /**
+   * Heuristic: does the customer's latest message look like a
+   * catalog / spec / product query? Gates the anti-stall forced retry
+   * so a tool-less reply to small-talk is never overridden.
+   */
+  private looksLikeCatalogQuery(text: string): boolean {
+    const t = (text || "").toLowerCase()
+    if (!t.trim()) return false
+    return /(mobile|phone|cell|smartphone|laptop|notebook|\btv\b|tablet|watch|earbud|headphone|speaker|camera|fridge|\bac\b|charger|power\s?bank|fps|\bhz\b|\bram\b|\bgb\b|\btb\b|mah|\bmp\b|inch|snapdragon|dimensity|tensor|helio|exynos|amoled|oled|5g|pta|gaming|pubg|battery|chipset|processor|budget|under|price|\brs\.?\b|rupees|\d+\s*k\b|best|recommend|chahi?ye|dikha|bata\s?(o|do)|kon\s?sa|kaunsa|which|show me|compare|sasta|cheap)/i.test(
+      t
+    )
+  }
+
+  /**
+   * Compact, model-facing view of the product's REAL saved specs
+   * (`metadata.specs`). The chatbot used to answer spec questions from
+   * only `key_specs` (6 highlight bullets), so it couldn't cite
+   * RAM / refresh-rate / pubg-fps / camera accurately and would guess.
+   * This surfaces the actual stored values (non-empty only),
+   * priority-ordered and capped so the tool payload stays small. If a
+   * key isn't here, the product genuinely doesn't have that spec.
+   */
+  private compactProductSpecs(
+    meta: Record<string, any>
+  ): Record<string, string> | null {
+    const raw = meta?.specs
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null
+
+    // Most-asked attributes first (phones, laptops, TVs, audio, etc.).
+    const PRIORITY = [
+      "memory", "ram", "storage", "ssd", "expandable_storage",
+      "chipset", "cpu", "gpu",
+      "pubg_fps",
+      "display_size", "refresh_rate", "display_technology", "panel_type",
+      "display_resolution", "resolution",
+      "camera_main", "camera_front", "camera_features", "main_camera_video",
+      "battery_capacity", "battery", "charging_speed", "wireless_charging",
+      "5g_support", "pta_approved", "sim_type", "os", "colors",
+    ]
+
+    const fmt = (v: any): string =>
+      typeof v === "boolean" ? (v ? "Yes" : "No") : String(v ?? "").trim()
+
+    const out: Record<string, string> = {}
+    const LIMIT = 20
+    const add = (key: string) => {
+      if (!key || key.startsWith("_") || key in out) return
+      if (Object.keys(out).length >= LIMIT) return
+      const val = fmt(raw[key])
+      if (val) out[key] = val
+    }
+
+    for (const k of PRIORITY) add(k)
+    // Any other real specs the template defines but we didn't list.
+    for (const k of Object.keys(raw)) add(k)
+
+    return Object.keys(out).length ? out : null
+  }
+
+  /**
    * Map a Medusa product row to the compact shape the model sees and
    * the storefront chat cards render.
    *
@@ -1264,6 +1399,10 @@ class AgenticCommerceService extends MedusaService({
       pta_approved: meta.pta_approved === true || meta.pta_approved === "true",
       color: typeof meta.color === "string" ? meta.color : null,
       key_specs: keySpecs,
+      // Real saved specs (RAM, refresh_rate, pubg_fps, camera, battery…)
+      // so the model answers spec questions from actual values instead of
+      // guessing from the 6 highlight bullets in key_specs.
+      specs: this.compactProductSpecs(meta),
       // Stock — only populated when inventory fields were requested on the
       // variant (get_product_details / compare_products). null = unknown,
       // so the model never claims stock it doesn't actually have.
@@ -1400,7 +1539,7 @@ class AgenticCommerceService extends MedusaService({
             entity: "product",
             fields: PFIELDS,
             filters: { status: "published", categories: { id: catIds } } as any,
-            pagination: { take: hasSpec ? 150 : 24 },
+            pagination: { take: hasSpec ? 300 : 24 },
             ...(priceCtx ? { context: priceCtx } : {}),
           })
           pushRows(r?.data)
@@ -1417,7 +1556,7 @@ class AgenticCommerceService extends MedusaService({
           entity: "product",
           fields: PFIELDS,
           filters: { status: "published" } as any,
-          pagination: { take: hasSpec ? 150 : 8 },
+          pagination: { take: hasSpec ? 300 : 8 },
           ...(priceCtx ? { context: priceCtx } : {}),
         })
         pushRows(r?.data)
@@ -1434,29 +1573,64 @@ class AgenticCommerceService extends MedusaService({
 
       const haystackOf = (p: any): string => {
         const m = (p?.metadata || {}) as Record<string, any>
-        const specs =
+        const parts: any[] = [p?.title, m.brand, m.model, m.color, m.condition]
+
+        // Build tokens from EACH spec key/value pair so EVERY field is
+        // matchable — by its value AND by its name — and boolean features
+        // (5g_support, wireless_charging, nfc, expandable_storage, …) are
+        // searchable by the feature name instead of the useless "true".
+        const specsObj =
           m.specs && typeof m.specs === "object" && !Array.isArray(m.specs)
-            ? Object.values(m.specs)
-            : []
+            ? (m.specs as Record<string, any>)
+            : {}
+        for (const [key, val] of Object.entries(specsObj)) {
+          if (val === null || typeof val === "undefined") continue
+          if (key.startsWith("_")) continue
+          const humanKey = key.replace(/_/g, " ")
+          if (typeof val === "boolean") {
+            // Only a TRUE feature contributes its name. A false one adds
+            // NOTHING — otherwise "wireless charging" would still match a
+            // phone that lacks it (spaces are stripped, so "no wireless
+            // charging" still contains "wirelesscharging").
+            if (val) parts.push(humanKey, humanKey + " yes", humanKey + " supported")
+            continue
+          }
+          const sval = String(val).trim()
+          if (!sval) continue
+          const low = sval.toLowerCase()
+          // Negative / absent values behave like a false boolean — skip,
+          // so searching "5G" never matches a phone whose field says "No".
+          if (
+            low === "no" || low === "false" || low === "none" ||
+            low === "n/a" || low === "na" || low === "-"
+          ) {
+            continue
+          }
+          // value + key + "key value" → "256gb", "storage", and
+          // "refresh rate 120hz" all match the same product.
+          parts.push(sval, humanKey, humanKey + " " + sval)
+          if (low === "yes" || low === "true") parts.push(humanKey)
+        }
+
         const keySpecs = Array.isArray(m.key_specs)
           ? m.key_specs
           : m.key_specs
           ? [m.key_specs]
           : []
-        
-        // Include other direct metadata specs keys like pta_approved, condition
-        const extraSpecs = [
-          m.brand,
-          m.model,
-          m.color,
-          m.condition,
-          (m.pta_approved === true || m.pta_approved === "true" || m.pta_approved === "Yes") ? "pta approved" : null
-        ]
+        parts.push(...keySpecs)
 
-        return normalize([p?.title, ...specs, ...keySpecs, ...extraSpecs]
-          .filter(Boolean)
-          .map((v) => String(v))
-          .join("   "))
+        // PTA flag is also stored at the top level on some products.
+        if (
+          m.pta_approved === true ||
+          m.pta_approved === "true" ||
+          m.pta_approved === "Yes"
+        ) {
+          parts.push("pta approved")
+        }
+
+        return normalize(
+          parts.filter(Boolean).map((v) => String(v)).join("   ")
+        )
       }
       rows = collected.filter((p) => {
         const h = haystackOf(p)
