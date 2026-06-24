@@ -74,13 +74,17 @@ ELECTRONICS STORE — DOMAIN GUIDANCE
   appear in search_products results — never invent stock.
 - Gaming Phones: In Pakistan, "gaming phone" means devices supporting high-end gaming (90FPS or 120FPS in PUBG, refresh rate 120Hz/144Hz/165Hz, high-end chipsets). When asked for gaming phones, ALWAYS search with spec_contains: ["90FPS"] or ["120FPS"] or ["120Hz"]. NEVER suggest budget 30FPS/40FPS phones or low-end devices.
 - Camera Phones: "Camera phone" means devices optimized for photography with OIS (Optical Image Stabilization), Leica/Zeiss lenses, or high megapixel cameras. Search with spec_contains: ["OIS"] or ["Leica"] or ["Zeiss"] or ["50MP"] or ["108MP"] or ["200MP"].
-- Spec talk: when discussing phones mention storage / RAM / display /
-  battery / camera / chipset if metadata has them. For laptops: CPU,
-  RAM, SSD, GPU, display size & refresh rate. For TVs: panel type
-  (LED / QLED / OLED), size in inches, resolution (4K / FHD), smart OS
-  (Google TV / Tizen / webOS). For audio: ANC, battery hours, Bluetooth
-  version. Only state a spec if the product metadata or title actually
-  contains it.
+- Spec talk: when searching or discussing specifications, match these exact keys and values (stored under metadata.specs):
+  * RAM (memory): "2GB RAM", "4GB RAM", "6GB RAM", "8GB RAM", "12GB RAM", "16GB RAM", "3GB RAM" (always search with spec_contains e.g. ["8GB", "RAM"])
+  * Storage (storage): "32GB", "64GB", "128GB", "256GB", "512GB", "1TB", "2TB"
+  * Chipset (chipset): e.g. "Mediatek Dimensity 8500 Ultra", "Google Tensor G5", "Qualcomm Snapdragon 8 Elite", "Helio G99", etc.
+  * PUBG FPS (pubg_fps): "30FPS", "40FPS", "50FPS", "60FPS", "90FPS", "120FPS"
+  * Refresh Rate (refresh_rate): "60Hz", "90Hz", "120Hz", "144Hz", "165Hz"
+  * Battery Capacity (battery_capacity): e.g. "5000 mAh", "6000 mAh", "charging_speed", "wireless_charging"
+  * Display Size (display_size): e.g. "6.7 inches"
+  * OS (os_operating_system_): e.g. "Android", "iOS"
+  * PTA Approved: pta_approved = true or false
+  Only state a spec if the product metadata or title actually contains it.
 - PTA approval (Pakistan): for imported smartphones, mention
   "PTA Approved" only when the product metadata flag (pta_approved =
   true) is set. Otherwise stay neutral — never assume.
@@ -875,36 +879,38 @@ class AgenticCommerceService extends MedusaService({
       // Append assistant message that requested tools, then execute and
       // append each tool result as role="tool".
       messages.push(msg)
-      for (const call of toolCalls) {
-        const name = call.function?.name
-        let args: any = {}
-        try { args = JSON.parse(call.function?.arguments || "{}") } catch {}
+      
+      const toolResults = await Promise.all(
+        toolCalls.map(async (call: any) => {
+          const name = call.function?.name
+          let args: any = {}
+          try { args = JSON.parse(call.function?.arguments || "{}") } catch {}
 
-        // NEVER let a tool crash the whole chat turn. Before this guard,
-        // any uncaught tool error (e.g. the pricing-context bug) became
-        // the user's entire reply as a raw error string. Now the error is
-        // fed back to the model as a tool result, so it apologises,
-        // retries another tool, or offers WhatsApp — stays agentic.
-        let result: any
-        let metaPatch: Record<string, any> | undefined
-        try {
-          ;({ result, metaPatch } = await this.executeTool(
-            name,
-            args,
-            container,
-            cartId,
-            authedCustomerId
-          ))
-        } catch (toolErr: any) {
-          console.log(
-            `[AgenticChat] tool "${name}" failed: ${toolErr?.message || toolErr}`
-          )
-          result = {
-            error:
-              "Tool failed temporarily. Try a different tool or apologise briefly and offer WhatsApp — do NOT show this raw error to the user.",
+          let result: any
+          let metaPatch: Record<string, any> | undefined
+          try {
+            ;({ result, metaPatch } = await this.executeTool(
+              name,
+              args,
+              container,
+              cartId,
+              authedCustomerId
+            ))
+          } catch (toolErr: any) {
+            console.log(
+              `[AgenticChat] tool "${name}" failed: ${toolErr?.message || toolErr}`
+            )
+            result = {
+              error:
+                "Tool failed temporarily. Try a different tool or apologise briefly and offer WhatsApp — do NOT show this raw error to the user.",
+            }
           }
-        }
 
+          return { callId: call.id, result, metaPatch }
+        })
+      )
+
+      for (const { callId, result, metaPatch } of toolResults) {
         if (metaPatch) {
           for (const [k, v] of Object.entries(metaPatch)) {
             if (Array.isArray(v) && Array.isArray(aggregateMetadata[k])) {
@@ -921,7 +927,7 @@ class AgenticCommerceService extends MedusaService({
 
         messages.push({
           role: "tool",
-          tool_call_id: call.id,
+          tool_call_id: callId,
           content: JSON.stringify(result).slice(0, 4000),
         })
       }
@@ -1423,6 +1429,9 @@ class AgenticCommerceService extends MedusaService({
     // admin tech-spec widget persists) + key_specs + title.
     let rows = collected
     if (hasSpec) {
+      const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, "")
+      const normalizedTerms = specTerms.map(normalize)
+
       const haystackOf = (p: any): string => {
         const m = (p?.metadata || {}) as Record<string, any>
         const specs =
@@ -1434,15 +1443,24 @@ class AgenticCommerceService extends MedusaService({
           : m.key_specs
           ? [m.key_specs]
           : []
-        return [p?.title, ...specs, ...keySpecs]
+        
+        // Include other direct metadata specs keys like pta_approved, condition
+        const extraSpecs = [
+          m.brand,
+          m.model,
+          m.color,
+          m.condition,
+          (m.pta_approved === true || m.pta_approved === "true" || m.pta_approved === "Yes") ? "pta approved" : null
+        ]
+
+        return normalize([p?.title, ...specs, ...keySpecs, ...extraSpecs]
           .filter(Boolean)
           .map((v) => String(v))
-          .join("  ")
-          .toLowerCase()
+          .join("   "))
       }
       rows = collected.filter((p) => {
         const h = haystackOf(p)
-        return specTerms.every((t) => h.includes(t))
+        return normalizedTerms.every((t) => h.includes(t))
       })
     }
 

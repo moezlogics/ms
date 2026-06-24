@@ -184,25 +184,63 @@ export default function MobileBottomNavClient({
       <nav
         role="navigation"
         aria-label="Primary"
-        className={[
-          "small:hidden",
-          "fixed bottom-0 inset-x-0 z-40",
-          // Subtle separation from page content; backdrop-blur lets
-          // gradient page backgrounds bleed through tastefully.
-          "bg-bg/95 supports-[backdrop-filter]:bg-bg/80 backdrop-blur-xl",
-          // Top corners curl inward — it's the "platform" the FAB
-          // sits on. Matches Concept 2 of the showcase.
-          "shadow-[0_-10px_28px_-14px_rgba(0,0,0,0.18)]",
-          "border-t",
-        ].join(" ")}
+        className="small:hidden fixed bottom-0 inset-x-0 z-40"
         style={{
           paddingBottom: "env(safe-area-inset-bottom)",
           ["--mobile-tabbar-h" as any]: "44px",
-          borderTopLeftRadius: "var(--radius-mobile-footer)",
-          borderTopRightRadius: "var(--radius-mobile-footer)",
-          borderTopColor: "rgb(var(--color-mobile-footer-border))",
         }}
       >
+        {/* Curved Background Wrapper */}
+        <div 
+          className="absolute inset-0 -z-10 flex flex-col pointer-events-none"
+          style={{
+            filter: "drop-shadow(0 -8px 20px rgba(0,0,0,0.08))",
+          }}
+        >
+          {/* Top portion (44px) with the curve in the middle */}
+          <div className="flex h-[44px] w-full items-stretch">
+            <div 
+              className="flex-1 bg-bg/95 supports-[backdrop-filter]:bg-bg/80 backdrop-blur-xl border-t" 
+              style={{ 
+                borderTopColor: "var(--hex-mobile-footer-border, rgb(var(--color-mobile-footer-border, var(--color-border, 233 233 233))))",
+                borderTopLeftRadius: "var(--radius-mobile-footer)",
+              }} 
+            />
+            <div className="w-[100px] h-[44px] shrink-0 relative bg-transparent">
+              <svg
+                width="100"
+                height="44"
+                viewBox="0 0 100 44"
+                className="absolute inset-0 w-full h-full"
+                fill="none"
+              >
+                {/* Backdrop background cutout shape */}
+                <path
+                  d="M 0 0 L 15 0 C 30 0, 32 24, 50 24 C 68 24, 70 0, 85 0 L 100 0 L 100 44 L 0 44 Z"
+                  fill="var(--hex-bg, #FFFFFF)"
+                  className="opacity-95"
+                />
+                {/* Smooth continuous border stroke */}
+                <path
+                  d="M 0 0.5 L 15 0.5 C 30 0.5, 32 24.5, 50 24.5 C 68 24.5, 70 0.5, 85 0.5 L 100 0.5"
+                  stroke="var(--hex-mobile-footer-border, rgb(var(--color-mobile-footer-border, var(--color-border, 233 233 233))))"
+                  strokeWidth="1"
+                  fill="none"
+                />
+              </svg>
+            </div>
+            <div 
+              className="flex-1 bg-bg/95 supports-[backdrop-filter]:bg-bg/80 backdrop-blur-xl border-t" 
+              style={{ 
+                borderTopColor: "var(--hex-mobile-footer-border, rgb(var(--color-mobile-footer-border, var(--color-border, 233 233 233))))",
+                borderTopRightRadius: "var(--radius-mobile-footer)",
+              }} 
+            />
+          </div>
+          {/* Bottom portion (safe area) */}
+          <div className="flex-1 bg-bg/95 supports-[backdrop-filter]:bg-bg/80 backdrop-blur-xl" />
+        </div>
+
         {/* Active-tab top accent dot — sits above the icon, animates
             from one slot to the next via translate3d for 60 fps. */}
         {activeIdx >= 0 && !slots[activeIdx]?.fab && (
@@ -250,14 +288,7 @@ export default function MobileBottomNavClient({
 
               return (
                 <li key={s.label} className="flex relative">
-                  {/* Notch — a circle painted in the page bg colour
-                      cuts a half-moon out of the bar so the FAB looks
-                      like it's seated inside it. Sized to the new
-                      smaller (48 px) FAB. */}
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-5 w-[60px] h-[60px] rounded-full bg-bg"
-                  />
+                  {/* Notch removed in favor of curved SVG background */}
                   {s.href ? (
                     <Link
                       href={s.href}
