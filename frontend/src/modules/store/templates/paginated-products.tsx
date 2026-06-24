@@ -207,7 +207,7 @@ export default async function PaginatedProducts({
         of {totalCount} {totalCount === 1 ? "product" : "products"}
       </p>
       <ul
-        className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 large:grid-cols-5 gap-x-2 small:gap-x-4 gap-y-3 small:gap-y-8"
+        className="grid grid-cols-2 xsmall:grid-cols-3 small:grid-cols-4 medium:grid-cols-6 large:grid-cols-8 gap-x-2 small:gap-x-3 gap-y-3 small:gap-y-6"
         data-testid="products-list"
       >
         {filtered.map((p, index) => (

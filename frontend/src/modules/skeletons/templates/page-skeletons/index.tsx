@@ -23,7 +23,7 @@ const CardSkeleton = () => (
 
 /** Responsive product grid (matches the real store/listing grid). */
 export const GridSkeleton = ({ count = 8 }: { count?: number }) => (
-  <div className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 large:grid-cols-5 gap-x-2 small:gap-x-4 gap-y-3 small:gap-y-8">
+  <div className="grid grid-cols-2 xsmall:grid-cols-3 small:grid-cols-4 medium:grid-cols-6 large:grid-cols-8 gap-x-2 small:gap-x-3 gap-y-3 small:gap-y-6">
     {Array.from({ length: count }).map((_, i) => (
       <CardSkeleton key={i} />
     ))}

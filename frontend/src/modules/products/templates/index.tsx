@@ -177,16 +177,16 @@ const ProductTemplate = async ({
     }
   }
 
-  const similarBudget = getSimilarBudgetProducts(product, allProducts, 4)
-  const similarSpecs = getSimilarSpecsProducts(product, allProducts, 4)
+  const similarBudget = getSimilarBudgetProducts(product, allProducts, 6)
+  const similarSpecs = getSimilarSpecsProducts(product, allProducts, 6)
 
-  const brandHandle = brand?.handle || product.metadata?.brand
+  const brandHandle = (brand?.handle || product.metadata?.brand) as string | undefined
   let brandProducts: any[] = []
   if (brandHandle) {
     try {
       const brandData = await getBrandByHandle(brandHandle).catch(() => null)
       if (brandData && brandData.product_ids?.length > 0) {
-        const targetIds = brandData.product_ids.filter((id) => id !== product.id).slice(0, 4)
+        const targetIds = brandData.product_ids.filter((id) => id !== product.id).slice(0, 6)
         if (targetIds.length > 0) {
           const brandProductsResult = await listProducts({
             queryParams: {
@@ -205,7 +205,7 @@ const ProductTemplate = async ({
 
   const sameBrand = brandProducts.length > 0
     ? brandProducts
-    : getSameBrandProducts(product, allProducts, brandHandle, 4)
+    : getSameBrandProducts(product, allProducts, brandHandle, 6)
 
   const renderInlineSection = (title: string, productsList: any[]) => {
     if (!productsList || productsList.length === 0) return null
@@ -217,9 +217,9 @@ const ProductTemplate = async ({
             {title}
           </h4>
         </div>
-        <ul className="grid grid-cols-4 gap-2 md:gap-4">
-          {productsList.map((p) => (
-            <li key={p.id}>
+        <ul className="grid grid-cols-4 medium:grid-cols-6 gap-2 md:gap-4">
+          {productsList.map((p, index) => (
+            <li key={p.id} className={index >= 4 ? "hidden medium:block" : ""}>
               <ProductPreview region={region} product={p} aspectClass={aspectRatioClass} />
             </li>
           ))}
@@ -521,7 +521,7 @@ const ProductTemplate = async ({
         </div>
 
         {/* Desktop Layout (hidden lg:grid) */}
-        <div className="hidden lg:grid lg:grid-cols-2 gap-3 lg:gap-4">
+        <div className="hidden lg:grid lg:grid-cols-[1.15fr_1fr] gap-3 lg:gap-4">
           {/* Gallery — left column */}
           <div className="w-full">
             <ImageGallery

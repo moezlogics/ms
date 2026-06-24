@@ -82,7 +82,7 @@ export default async function ProductRail({
           </h2>
         </div>
 
-        <ul className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 large:grid-cols-5 gap-x-2 small:gap-x-4 gap-y-3 small:gap-y-8">
+        <ul className="grid grid-cols-2 xsmall:grid-cols-3 small:grid-cols-4 medium:grid-cols-6 large:grid-cols-8 gap-x-2 small:gap-x-3 gap-y-3 small:gap-y-6">
           {pricedProducts.map((product, index) => (
             <li key={product.id}>
               {/* First 5 cards are above the fold — eager-load their images
