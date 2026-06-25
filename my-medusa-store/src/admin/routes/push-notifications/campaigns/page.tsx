@@ -38,10 +38,12 @@ type Campaign = {
   total_sent: number
   total_failed: number
   total_clicked: number
+  total_shown: number
   status: "draft" | "sending" | "sent" | "failed"
   sent_at: string | null
   created_at: string
 }
+
 
 type Facet = { key: string; count: number }
 type Facets = {
@@ -74,12 +76,14 @@ type Form = {
   filter_customers_only: boolean
 }
 
+const DEFAULT_ACTION_URL = "https://mobilestore.pk/"
+
 const EMPTY_FORM: Form = {
   title: "",
   body: "",
   icon_url: "",
   image_url: "",
-  action_url: "",
+  action_url: DEFAULT_ACTION_URL,
   filter_cities: [],
   filter_states: [],
   filter_countries: [],
@@ -89,6 +93,7 @@ const EMPTY_FORM: Form = {
   filter_genders: [],
   filter_customers_only: false,
 }
+
 
 async function fetchCampaigns(): Promise<{ campaigns: Campaign[] }> {
   const res = await fetch("/admin/push-campaigns", { credentials: "include" })
@@ -162,7 +167,9 @@ const Page = () => {
   const [facets, setFacets] = useState<Facets | null>(null)
   const [busy, setBusy] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
   const iconRef = useRef<HTMLInputElement>(null)
+
   const imageRef = useRef<HTMLInputElement>(null)
 
   // Debounced live "would target N subscribers" estimate. Re-runs on
@@ -358,14 +365,15 @@ const Page = () => {
 
               <Field label="Action URL">
                 <Input
-                  placeholder="/collections/new-arrivals"
+                  placeholder="https://mobilestore.pk/collections/new-arrivals"
                   value={form.action_url}
                   onChange={(e) => setForm({ ...form, action_url: e.target.value })}
                 />
                 <p style={adminHelpText}>
-                  Where the user goes when the notification is clicked. Defaults to the homepage.
+                  Where the user goes when the notification is clicked. Enter a complete URL (e.g. internal pages like https://mobilestore.pk/collections/new-arrivals or external sites like https://google.com).
                 </p>
               </Field>
+
             </div>
           </div>
 
@@ -650,11 +658,22 @@ const Page = () => {
                 {history.slice(0, 12).map((c) => (
                   <div
                     key={c.id}
+                    onClick={() => setSelectedCampaign(c)}
                     style={{
                       border: A.border,
                       borderRadius: 8,
                       padding: 12,
                       background: A.bgField,
+                      cursor: "pointer",
+                      transition: "transform 0.1s, box-shadow 0.1s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)"
+                      e.currentTarget.style.transform = "translateY(-1px)"
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.boxShadow = "none"
+                      e.currentTarget.style.transform = "none"
                     }}
                   >
                     <div
@@ -687,17 +706,27 @@ const Page = () => {
                     <div
                       style={{
                         display: "flex",
-                        gap: 14,
+                        gap: 12,
                         fontSize: 11,
                         color: A.fgMuted,
                         marginTop: 6,
+                        flexWrap: "wrap",
                       }}
                     >
                       <span>📨 {c.total_sent}/{c.total_targeted}</span>
+                      <span>👁 {c.total_shown}</span>
                       {(c.total_clicked || 0) > 0 && (
                         <span title="Clicks">
                           👆 {c.total_clicked}
-                          {c.total_sent > 0 && (
+                          {c.total_shown > 0 ? (
+                            <span style={{ color: A.fgSubtle, marginLeft: 4 }}>
+                              (
+                              {Math.round(
+                                ((c.total_clicked || 0) / c.total_shown) * 100
+                              )}
+                              % CTR)
+                            </span>
+                          ) : c.total_sent > 0 ? (
                             <span style={{ color: A.fgSubtle, marginLeft: 4 }}>
                               (
                               {Math.round(
@@ -705,7 +734,7 @@ const Page = () => {
                               )}
                               % CTR)
                             </span>
-                          )}
+                          ) : null}
                         </span>
                       )}
                       {c.total_failed > 0 && (
@@ -724,9 +753,291 @@ const Page = () => {
           </div>
         </div>
       </div>
+
+      {/* Campaign Details Modal */}
+      {selectedCampaign && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: 20,
+          }}
+          onClick={() => setSelectedCampaign(null)}
+        >
+          <div
+            style={{
+              backgroundColor: A.bg,
+              border: A.border,
+              borderRadius: 12,
+              width: "100%",
+              maxWidth: 680,
+              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "16px 20px",
+                borderBottom: A.border,
+                background: A.bgSubtle,
+              }}
+            >
+              <div>
+                <Heading level="h2" style={{ fontSize: 16 }}>Campaign Details</Heading>
+                <span style={{ fontSize: 11, color: A.fgSubtle }}>ID: {selectedCampaign.id}</span>
+              </div>
+              <button
+                onClick={() => setSelectedCampaign(null)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  fontSize: 20,
+                  cursor: "pointer",
+                  color: A.fgSubtle,
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 20 }}>
+              {/* Row 1: Notification Preview & Basic Info */}
+              <div style={{ display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: 16 }}>
+                <div>
+                  <h4 style={{ fontSize: 12, fontWeight: 600, color: A.fgSubtle, textTransform: "uppercase", marginBottom: 8 }}>
+                    Payload Preview
+                  </h4>
+                  <div style={{ pointerEvents: "none" }}>
+                    <NotificationPreview
+                      form={{
+                        title: selectedCampaign.title,
+                        body: selectedCampaign.body,
+                        icon_url: selectedCampaign.icon_url || "",
+                        image_url: selectedCampaign.image_url || "",
+                        action_url: selectedCampaign.action_url || "",
+                        filter_cities: [],
+                        filter_states: [],
+                        filter_countries: [],
+                        filter_device_types: [],
+                        filter_os: [],
+                        filter_browsers: [],
+                        filter_genders: [],
+                        filter_customers_only: false,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: A.fgSubtle }}>Action URL</span>
+                    <div style={{ marginTop: 2 }}>
+                      {selectedCampaign.action_url ? (
+                        <a
+                          href={selectedCampaign.action_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ fontSize: 13, color: "rgb(var(--color-primary))", textDecoration: "underline", wordBreak: "break-all" }}
+                        >
+                          {selectedCampaign.action_url}
+                        </a>
+                      ) : (
+                        <span style={{ fontSize: 13, color: A.fgMuted }}>None (Opens Home)</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: A.fgSubtle }}>Sent At</span>
+                    <div style={{ fontSize: 13, color: A.fg, marginTop: 2 }}>
+                      {selectedCampaign.sent_at ? new Date(selectedCampaign.sent_at).toLocaleString() : "Not sent"}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: A.fgSubtle }}>Status</span>
+                    <div style={{ marginTop: 2 }}>
+                      <Badge color={STATUS_COLORS[selectedCampaign.status] || "grey"}>
+                        {selectedCampaign.status.toUpperCase()}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Row 2: Performance Metrics (Delivery, Click, CTR) */}
+              <div>
+                <h4 style={{ fontSize: 12, fontWeight: 600, color: A.fgSubtle, textTransform: "uppercase", marginBottom: 12 }}>
+                  Performance Metrics
+                </h4>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                  <div style={{ border: A.border, padding: 12, borderRadius: 8, background: A.bgSubtle }}>
+                    <div style={{ fontSize: 11, color: A.fgSubtle }}>Delivery Rate</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, margin: "4px 0", color: A.fg }}>
+                      {selectedCampaign.total_sent > 0
+                        ? `${Math.round((selectedCampaign.total_shown / selectedCampaign.total_sent) * 100)}%`
+                        : "0%"}
+                    </div>
+                    <div style={{ fontSize: 11, color: A.fgMuted }}>
+                      {selectedCampaign.total_shown} of {selectedCampaign.total_sent} shown
+                    </div>
+                  </div>
+
+                  <div style={{ border: A.border, padding: 12, borderRadius: 8, background: A.bgSubtle }}>
+                    <div style={{ fontSize: 11, color: A.fgSubtle }}>Click-Through Rate (CTR)</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, margin: "4px 0", color: "#22c55e" }}>
+                      {selectedCampaign.total_shown > 0
+                        ? `${Math.round((selectedCampaign.total_clicked / selectedCampaign.total_shown) * 100)}%`
+                        : selectedCampaign.total_sent > 0
+                        ? `${Math.round((selectedCampaign.total_clicked / selectedCampaign.total_sent) * 100)}%`
+                        : "0%"}
+                    </div>
+                    <div style={{ fontSize: 11, color: A.fgMuted }}>
+                      {selectedCampaign.total_clicked} clicks recorded
+                    </div>
+                  </div>
+
+                  <div style={{ border: A.border, padding: 12, borderRadius: 8, background: A.bgSubtle }}>
+                    <div style={{ fontSize: 11, color: A.fgSubtle }}>Reach Efficiency</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, margin: "4px 0", color: "#3b82f6" }}>
+                      {selectedCampaign.total_targeted > 0
+                        ? `${Math.round((selectedCampaign.total_sent / selectedCampaign.total_targeted) * 100)}%`
+                        : "0%"}
+                    </div>
+                    <div style={{ fontSize: 11, color: A.fgMuted }}>
+                      {selectedCampaign.total_sent} of {selectedCampaign.total_targeted} targeted
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Visual progress bar */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 500 }}>
+                  <span style={{ color: A.fgSubtle }}>Delivery Funnel</span>
+                  <span style={{ color: A.fg }}>
+                    {selectedCampaign.total_clicked} Clicks • {selectedCampaign.total_shown} Impressions • {selectedCampaign.total_sent} Sent
+                  </span>
+                </div>
+                <div style={{ height: 10, width: "100%", background: A.bgField, borderRadius: 5, overflow: "hidden", display: "flex" }}>
+                  <div
+                    style={{
+                      width: `${selectedCampaign.total_sent > 0 ? (selectedCampaign.total_clicked / selectedCampaign.total_sent) * 100 : 0}%`,
+                      background: "#22c55e",
+                      height: "100%",
+                    }}
+                    title="Clicked"
+                  />
+                  <div
+                    style={{
+                      width: `${selectedCampaign.total_sent > 0 ? ((selectedCampaign.total_shown - selectedCampaign.total_clicked) / selectedCampaign.total_sent) * 100 : 0}%`,
+                      background: "#a78bfa",
+                      height: "100%",
+                    }}
+                    title="Shown but not clicked"
+                  />
+                  <div
+                    style={{
+                      width: `${selectedCampaign.total_sent > 0 ? ((selectedCampaign.total_sent - selectedCampaign.total_shown) / selectedCampaign.total_sent) * 100 : 0}%`,
+                      background: "#f59e0b",
+                      height: "100%",
+                    }}
+                    title="Failed or not shown"
+                  />
+                </div>
+                <div style={{ display: "flex", gap: 12, fontSize: 10, color: A.fgMuted, marginTop: 2 }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 4, background: "#22c55e" }} /> Clicks ({selectedCampaign.total_clicked})
+                  </span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 4, background: "#a78bfa" }} /> Impressions ({selectedCampaign.total_shown - selectedCampaign.total_clicked})
+                  </span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 4, background: "#f59e0b" }} /> Unreceived ({selectedCampaign.total_sent - selectedCampaign.total_shown})
+                  </span>
+                </div>
+              </div>
+
+              {/* Targeted Filters */}
+              <div>
+                <h4 style={{ fontSize: 12, fontWeight: 600, color: A.fgSubtle, textTransform: "uppercase", marginBottom: 8 }}>
+                  Target Filters
+                </h4>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  <FilterTag label="Customers Only" value={selectedCampaign.filter_customers_only ? "Yes" : "No"} />
+                  <FilterTagArray label="Cities" value={selectedCampaign.filter_cities} />
+                  <FilterTagArray label="States" value={selectedCampaign.filter_states} />
+                  <FilterTagArray label="Countries" value={selectedCampaign.filter_countries} />
+                  <FilterTagArray label="Device Types" value={selectedCampaign.filter_device_types} />
+                  <FilterTagArray label="OS" value={selectedCampaign.filter_os} />
+                  <FilterTagArray label="Browsers" value={selectedCampaign.filter_browsers} />
+                  <FilterTagArray label="Genders" value={selectedCampaign.filter_genders} />
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div
+              style={{
+                padding: "12px 20px",
+                borderTop: A.border,
+                display: "flex",
+                justifyContent: "flex-end",
+                background: A.bgSubtle,
+                borderBottomLeftRadius: 12,
+                borderBottomRightRadius: 12,
+              }}
+            >
+              <Button onClick={() => setSelectedCampaign(null)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Container>
   )
 }
+
+const FilterTag = ({ label, value }: { label: string; value: string }) => (
+  <div style={{ border: A.border, borderRadius: 6, padding: "4px 8px", background: A.bgField, fontSize: 12 }}>
+    <span style={{ color: A.fgSubtle, marginRight: 4 }}>{label}:</span>
+    <span style={{ color: A.fg, fontWeight: 500 }}>{value}</span>
+  </div>
+)
+
+const FilterTagArray = ({ label, value }: { label: string; value: string | null }) => {
+  if (!value) return null
+  try {
+    const list = JSON.parse(value)
+    if (!Array.isArray(list) || list.length === 0) return null
+    return (
+      <div style={{ border: A.border, borderRadius: 6, padding: "4px 8px", background: A.bgField, fontSize: 12 }}>
+        <span style={{ color: A.fgSubtle, marginRight: 4 }}>{label}:</span>
+        <span style={{ color: A.fg, fontWeight: 500 }}>{list.join(", ")}</span>
+      </div>
+    )
+  } catch {
+    return null
+  }
+}
+
 
 const Field = ({
   label,

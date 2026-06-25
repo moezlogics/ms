@@ -59,8 +59,47 @@ self.addEventListener("push", (event) => {
     vibrate: [100, 50, 100],
   }
 
-  event.waitUntil(self.registration.showNotification(title, options))
+  event.waitUntil(
+    Promise.all([
+      self.registration.showNotification(title, options),
+      trackShow(options.data),
+    ])
+  )
 })
+
+/**
+ * Best-effort shown/impression tracking. Calls the backend when a
+ * notification is received and shown on the device.
+ */
+async function trackShow(data) {
+  try {
+    const backend = data && data.backend_url
+    const key = data && data.publishable_key
+    if (!backend) return
+    let endpoint = null
+    try {
+      const sub = await self.registration.pushManager.getSubscription()
+      endpoint = sub && sub.endpoint
+    } catch (e) {
+      /* ignore */
+    }
+    if (!endpoint) return
+    const headers = { "Content-Type": "application/json" }
+    if (key) headers["x-publishable-api-key"] = key
+    await fetch(backend.replace(/\/$/, "") + "/store/push-subscriptions/shown", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        endpoint,
+        campaign_id: data.campaign_id || null,
+      }),
+      keepalive: true,
+    })
+  } catch (e) {
+    /* best-effort */
+  }
+}
+
 
 /**
  * Best-effort click tracking. Calls the backend so the admin dashboard

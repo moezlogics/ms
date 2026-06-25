@@ -42,6 +42,8 @@ export const PushSubscription = model.define("push_subscription", {
   // segmentation ("hot" vs "dormant" subscribers).
   total_clicked: model.number().default(0),
   last_clicked_at: model.dateTime().nullable(),
+  total_shown: model.number().default(0),
+  last_shown_at: model.dateTime().nullable(),
 })
 
 /**
@@ -71,6 +73,8 @@ export const PushCampaign = model.define("push_campaign", {
   total_sent: model.number().default(0),
   total_failed: model.number().default(0),
   total_clicked: model.number().default(0),
+  total_shown: model.number().default(0),
   status: model.enum(["draft", "sending", "sent", "failed"]).default("draft"),
   sent_at: model.dateTime().nullable(),
 })
+

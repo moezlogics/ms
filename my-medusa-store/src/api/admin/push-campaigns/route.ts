@@ -132,6 +132,26 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     },
   ])
 
+  // Find a publishable API key from the database if not set in environment
+  let publishableKey = process.env.MEDUSA_PUBLISHABLE_KEY || process.env.STORE_PUBLISHABLE_KEY
+  if (!publishableKey) {
+    try {
+      const query = req.scope.resolve("query")
+      const { data: apiKeys } = await query.graph({
+        entity: "api_key",
+        fields: ["id", "type"],
+        filters: {
+          type: "publishable",
+        },
+      })
+      if (apiKeys && apiKeys.length > 0) {
+        publishableKey = apiKeys[0].id
+      }
+    } catch (err) {
+      logger?.warn?.(`[PushCampaign] Failed to query publishable API key: ${(err as Error).message}`)
+    }
+  }
+
   // Build the payload the SW will receive. We thread the backend URL
   // and publishable key through so the SW can post click events back
   // for CTR tracking. (See `public/sw.js` `trackClick`.)
@@ -146,12 +166,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       process.env.STORE_PUBLIC_BACKEND_URL ||
       process.env.MEDUSA_BACKEND_URL ||
       undefined,
-    publishable_key:
-      process.env.MEDUSA_PUBLISHABLE_KEY ||
-      process.env.STORE_PUBLISHABLE_KEY ||
-      undefined,
+    publishable_key: publishableKey || undefined,
     data: { campaign_id: campaign.id },
   }
+
 
   // Fan out
   const result = await sendPushBatch(
