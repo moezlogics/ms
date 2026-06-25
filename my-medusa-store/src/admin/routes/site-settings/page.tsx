@@ -76,6 +76,7 @@ const DEFAULT_KEYS = [
   "page_refund_title",
   "page_refund_content",
   "page_home_content",
+  "push_notifications_enabled",
 ] as const
 
 // Allowed product-card aspect ratios. The storefront falls back to 3/4 if
@@ -951,6 +952,19 @@ const Page = () => {
             </select>
           </Field>
         )}
+        <Field label="Web Push Notifications" help="Enable or disable customer web push notifications. When disabled, the subscription prompt is hidden and auto notifications (e.g. order confirmation push) are paused. Manual admin push and admin app push will still function normally.">
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Switch
+              checked={settings.push_notifications_enabled !== "false"}
+              onCheckedChange={(v: boolean) =>
+                set("push_notifications_enabled", v ? "true" : "false")
+              }
+            />
+            <span style={{ fontSize: 13 }}>
+              {settings.push_notifications_enabled !== "false" ? "Enabled (prompts and auto-push active)" : "Disabled (prompts and auto-push paused)"}
+            </span>
+          </div>
+        </Field>
       </Section>
 
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 20 }}>

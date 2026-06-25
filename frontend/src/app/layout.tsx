@@ -190,7 +190,9 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         {/* Web Push — registers /sw.js and triggers the native browser
             permission prompt on first user gesture. No-op on iOS Safari
             (push not yet supported in non-PWA contexts). */}
-        <ClientPushPrompt customerId={customerId} />
+        {settings.push_notifications_enabled !== "false" && (
+          <ClientPushPrompt customerId={customerId} />
+        )}
         {/* AI Shopping Assistant — with product search, cart actions, and
             order concierge built into the chat. Cart id is fetched lazily
             inside the widget (see note above). */}

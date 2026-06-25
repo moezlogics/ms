@@ -128,6 +128,7 @@ export type SiteSettings = {
 
   // Feature toggles (admin-managed)
   whatsapp_number?: string
+  push_notifications_enabled?: string
   whatsapp_widget_enabled?: string
   whatsapp_buy_now_enabled?: string
   whatsapp_chatbot_enabled?: string

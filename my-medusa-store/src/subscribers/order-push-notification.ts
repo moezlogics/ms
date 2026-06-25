@@ -220,6 +220,21 @@ export default async function pushNotificationOrderHandler({
 
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   logger.info(`[PushNotification] ✅ SUBSCRIBER FIRED for ${eventName} — id=${targetId}`)
+
+  // Check if customer push notifications are disabled in site settings
+  try {
+    const settingsModule = container.resolve("site_settings") as any
+    if (settingsModule?.getAll) {
+      const settings = await settingsModule.getAll()
+      if (settings.push_notifications_enabled === "false") {
+        logger.info(`[PushNotification] Push notifications disabled in site settings — skipping auto-push for ${eventName}`)
+        return
+      }
+    }
+  } catch (e: any) {
+    logger.warn(`[PushNotification] Failed to check site_settings: ${e.message}`)
+  }
+
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
 
   // VAPID is required to send anything — bail early if unconfigured.

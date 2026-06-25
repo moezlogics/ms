@@ -157,6 +157,18 @@ completeCartWorkflow.hooks.validate(
     // bus was not delivering order.placed. Uses the SAME `tag` as the
     // subscriber so if both ever fire, the SW dedupes (no double push).
     try {
+      // Check if customer push notifications are disabled in site settings
+      try {
+        const sm: any = container.resolve("site_settings")
+        const s = sm?.getAll ? await sm.getAll() : {}
+        if (s?.push_notifications_enabled === "false") {
+          console.log(`[CustomerPush/hook] Push notifications disabled in site settings — skipping auto-push for order=${order_id}`)
+          return
+        }
+      } catch (e: any) {
+        console.log(`[CustomerPush/hook] Failed to retrieve site settings: ${e.message}`)
+      }
+
       const query = container.resolve("query")
       const { data: [ord] } = await query.graph({
         entity: "order",
