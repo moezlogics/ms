@@ -72,6 +72,18 @@ export type SiteSettings = {
   // tags, AdSense, custom analytics snippets, etc.). Admin-only field.
   head_code?: string
 
+  // ── Ad placements (rendered via <AdSlot>) ───────────────────────────
+  // Optional per-slot ad-unit HTML (MANUAL AdSense / GAM / house-ad
+  // markup). Each renders inside a reserved fixed-size box with a shimmer
+  // placeholder + IntersectionObserver lazy-load, so ads load smoothly and
+  // never cause layout shift (CarWale-style). Empty → that slot renders
+  // nothing. Use MANUAL ad units (NOT Auto Ads) so the creative size is
+  // known up-front and can be reserved.
+  ad_home_top_html?: string
+  ad_home_inline_html?: string
+  ad_listing_html?: string
+  ad_pdp_html?: string
+
   // Storefront appearance
   product_card_aspect?: string
   /**

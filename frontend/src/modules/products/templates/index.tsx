@@ -29,6 +29,7 @@ import PreorderBanner from "@modules/products/components/preorder-banner"
 import { getBundlesForProduct } from "@lib/data/bundles"
 import { getFirstResolvedTemplate } from "@lib/data/spec-templates"
 import { getSiteSettings, resolveProductCardAspectClass } from "@lib/data/site-settings"
+import AdSlot from "@modules/common/components/ad-slot"
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
@@ -567,6 +568,17 @@ const ProductTemplate = async ({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Sponsored slot below the product details — reserved height + shimmer
+          + lazy-load (zero layout shift). No-op until `ad_pdp_html` is set. */}
+      <div className="container-anvogue my-4 md:my-6">
+        <AdSlot
+          html={(settings as any).ad_pdp_html}
+          minHeight={250}
+          minHeightDesktop={250}
+          label="Sponsored"
+        />
       </div>
 
       {/* Description + Reviews — tabbed layout (English / اردو / Reviews) */}

@@ -13,6 +13,8 @@ import { listProducts } from "@lib/data/products"
 import { sdk } from "@lib/config"
 import MobileBrandsSidebar from "@modules/store/components/mobile-brands-sidebar"
 import PaginatedProducts from "./paginated-products"
+import AdSlot from "@modules/common/components/ad-slot"
+import { getSiteSettings } from "@lib/data/site-settings"
 
 type Props = {
   sortBy?: SortOptions
@@ -89,7 +91,7 @@ const StoreTemplate = async ({
       ? [categoryId]
       : undefined
 
-  const [categories, brands, active, allProductsInScopeRes, specTemplatesRes] = await Promise.all([
+  const [categories, brands, active, allProductsInScopeRes, specTemplatesRes, settings] = await Promise.all([
     listCategories().catch(() => []),
     listBrands().catch(() => []),
     // "Hybrid" mode — only meaningful when we're scoped to a brand
@@ -116,6 +118,7 @@ const StoreTemplate = async ({
           countryCode,
         }).catch(() => ({ response: { products: [], count: 0 } })),
     sdk.client.fetch<{ spec_templates: any[] }>(`/store/spec-templates`).catch(() => ({ spec_templates: [] })),
+    getSiteSettings().catch(() => ({})),
   ])
 
   const allProductsInScope = allProductsInScopeRes.response.products || []
@@ -306,6 +309,17 @@ const StoreTemplate = async ({
               searchParams={searchParams}
             />
           </Suspense>
+
+          {/* Sponsored slot at the end of the listing — reserved height +
+              shimmer + lazy-load (zero layout shift). No-op until the admin
+              sets `ad_listing_html`. */}
+          <AdSlot
+            html={(settings as any).ad_listing_html}
+            minHeight={250}
+            minHeightDesktop={250}
+            label="Sponsored"
+            className="mt-6"
+          />
         </div>
       </div>
     </div>
