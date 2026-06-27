@@ -235,7 +235,7 @@ async function getCountryCodes(): Promise<string[]> {
     const codes = Array.from(
       new Set(
         (regions ?? [])
-          .flatMap((r) => r.countries?.map((c) => c.iso_2) ?? [])
+          .flatMap((r: any) => r.countries?.map((c: any) => c.iso_2) ?? [])
           .filter(Boolean) as string[]
       )
     )

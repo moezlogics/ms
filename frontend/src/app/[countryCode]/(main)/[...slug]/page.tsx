@@ -310,7 +310,11 @@ export default async function SlugPage(props: Props) {
 
     const categoryChain = buildCategoryChain(primaryCategory)
     
-    const brandChain = brand ? (brand.parent_id ? [brands?.find(b => b?.id === brand.parent_id), brand].filter(Boolean) : [brand]) : []
+    const brandChain = brand
+      ? (brand.parent_id
+          ? ([brands?.find((b) => b?.id === brand.parent_id), brand].filter(Boolean) as any[])
+          : [brand])
+      : []
 
     return (
       <>
