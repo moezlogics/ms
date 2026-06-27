@@ -102,12 +102,24 @@ export default function ProductDescriptionTabs({
   const [activeSection, setActiveSection] = useState<SectionKey>(
     sections[0]?.key || "reviews"
   )
-  const [isSticky, setIsSticky] = useState(false)
+  const [headerHeight, setHeaderHeight] = useState(0)
 
   const navRef = useRef<HTMLDivElement>(null)
-  const sentinelRef = useRef<HTMLDivElement>(null)
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const isScrollingRef = useRef(false)
+
+  // Measure the sticky site header height so our nav sticks below it
+  useEffect(() => {
+    const header = document.getElementById("header")
+    if (!header) return
+
+    const measure = () => setHeaderHeight(header.offsetHeight)
+    measure()
+
+    const ro = new ResizeObserver(measure)
+    ro.observe(header)
+    return () => ro.disconnect()
+  }, [])
 
   // Assign a ref to a section
   const setSectionRef = useCallback(
@@ -117,20 +129,8 @@ export default function ProductDescriptionTabs({
     []
   )
 
-  // Sticky detection via sentinel IntersectionObserver
-  useEffect(() => {
-    const sentinel = sentinelRef.current
-    if (!sentinel) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsSticky(!entry.isIntersecting)
-      },
-      { threshold: 0 }
-    )
-    observer.observe(sentinel)
-    return () => observer.disconnect()
-  }, [])
+  // Total offset = header + nav bar
+  const totalOffset = headerHeight + (navRef.current?.offsetHeight || 44)
 
   // Track active section via IntersectionObserver
   useEffect(() => {
@@ -170,7 +170,7 @@ export default function ProductDescriptionTabs({
           }
         },
         {
-          rootMargin: "-80px 0px -60% 0px",
+          rootMargin: `-${totalOffset + 20}px 0px -60% 0px`,
           threshold: [0, 0.1, 0.25, 0.5],
         }
       )
@@ -246,9 +246,11 @@ export default function ProductDescriptionTabs({
     isScrollingRef.current = true
     setActiveSection(key as SectionKey)
 
-    // Account for sticky nav height (~52px) plus some breathing room
-    const navHeight = navRef.current?.offsetHeight || 52
-    const y = el.getBoundingClientRect().top + window.scrollY - navHeight - 8
+    // Account for sticky header + sticky nav bar height
+    const header = document.getElementById("header")
+    const hHeight = header?.offsetHeight || 0
+    const navHeight = navRef.current?.offsetHeight || 44
+    const y = el.getBoundingClientRect().top + window.scrollY - hHeight - navHeight - 8
 
     window.scrollTo({ top: y, behavior: "smooth" })
 
@@ -267,17 +269,11 @@ export default function ProductDescriptionTabs({
 
   return (
     <div className="w-full">
-      {/* Sentinel — when this scrolls out of view, the nav becomes sticky */}
-      <div ref={sentinelRef} className="h-0 w-full" aria-hidden />
-
-      {/* Sticky navigation bar */}
+      {/* Sticky navigation bar — sticks below the site header */}
       <div
         ref={navRef}
-        className={`bg-white/95 backdrop-blur-sm z-30 transition-shadow duration-200 ${
-          isSticky
-            ? "sticky top-0 shadow-[0_2px_8px_rgba(0,0,0,0.08)] border-b border-line"
-            : "border-b border-line"
-        }`}
+        className="sticky z-30 bg-white/95 backdrop-blur-sm border-b border-line shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-shadow duration-200"
+        style={{ top: `${headerHeight}px` }}
         role="navigation"
         aria-label="Product sections"
       >
