@@ -39,6 +39,7 @@ type ImageGalleryProps = {
   /** Fallback alt — typically the product title. */
   altFallback?: string
   aspectRatioClass?: string
+  priority?: boolean
 }
 
 /**
@@ -53,7 +54,7 @@ type ImageGalleryProps = {
  *   [main image/video] (swipe-navigable with dots)
  *   [horizontal thumbnail strip]
  */
-const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }: ImageGalleryProps) => {
+const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass, priority = true }: ImageGalleryProps) => {
   const aspectClass = aspectRatioClass || "aspect-square"
   const altFor = (url: string, index: number) =>
     (altMap && altMap[url]) || altFallback || `Product image ${index + 1}`
@@ -214,7 +215,7 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
                     src={active.url}
                     alt={altFor(active.url, activeIndex)}
                     fill
-                    priority={activeIndex === 0}
+                    priority={priority && activeIndex === 0}
                     sizes="50vw"
                     quality={80}
                     className={`object-cover ${isZooming ? "" : "transition-all duration-300 ease-in-out"}`}
@@ -266,7 +267,7 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
                       src={item.url}
                       alt={altFor(item.url, i)}
                       fill
-                      priority={i === 0}
+                      priority={priority && i === 0}
                       /* On mobile the PDP shows the gallery in a 50/50 grid
                          (≈50vw), not full width — `100vw` was making Next
                          serve a 2× oversized image (PageSpeed: 750×875 for a

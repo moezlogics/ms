@@ -530,6 +530,7 @@ const ProductTemplate = async ({
               altMap={altMap}
               altFallback={product.title || "Product image"}
               aspectRatioClass={aspectRatioClass}
+              priority={false}
             />
           </div>
 
