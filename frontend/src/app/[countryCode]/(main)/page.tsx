@@ -2,7 +2,6 @@ import { Metadata } from "next"
 import { Suspense } from "react"
 
 import { GridSkeleton } from "@modules/skeletons/templates/page-skeletons"
-import { listCollections } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 import { getSiteSettings } from "@lib/data/site-settings"
 import { parseCategoryBar } from "@lib/util/category-bar"
@@ -13,7 +12,6 @@ import ProductRail from "@modules/home/components/featured-products/product-rail
 import CategoryCarouselServer from "@modules/home/components/category-carousel/server"
 import { listBrands } from "@lib/data/brands"
 import MobileBrandsSidebar from "@modules/store/components/mobile-brands-sidebar"
-import AdSlot from "@modules/common/components/ad-slot"
 
 
 /**
@@ -66,19 +64,14 @@ export default async function Home(props: {
   const { countryCode } = await props.params
 
   // Parallelize independent fetches so the homepage TTFB stays tight.
-  const [region, collectionsRes, banners, settings, brands] = await Promise.all([
+  const [region, banners, settings, brands] = await Promise.all([
     getRegion(countryCode),
-    listCollections({ fields: "id, handle, title" }),
     listBanners(),
     getSiteSettings(),
     listBrands().catch(() => []),
   ])
 
   if (!region) return null
-  const collections = collectionsRes?.collections || []
-
-  // Show up to 2 featured collections on the homepage to keep it scannable.
-  const featured = collections.slice(0, 2)
 
   const brandItems = (brands || [])
     .filter((b) => b.is_active)
@@ -129,17 +122,6 @@ export default async function Home(props: {
         </div>
       )}
 
-      {/* Sponsored leaderboard — reserves its height + shimmer + lazy-loads,
-          so it never shifts the page (CarWale-style). No-op until the admin
-          sets `ad_home_top_html`. */}
-      <AdSlot
-        html={(settings as any).ad_home_top_html}
-        minHeight={100}
-        minHeightDesktop={90}
-        label="Sponsored"
-        className="mb-4 small:mb-6"
-      />
-
       <div className="flex gap-4 small:gap-6 -mx-4 small:mx-0">
         {/* Left column: Brands Sidebar (both desktop & mobile) */}
         <aside className="w-[68px] small:w-[110px] flex-shrink-0 self-start sticky top-[56px] small:top-[64px] h-[calc(100vh-56px-44px)] small:h-[calc(100vh-64px)] overflow-y-auto z-30">
@@ -168,17 +150,6 @@ export default async function Home(props: {
               </Suspense>
             </li>
           </ul>
-
-          {/* In-content sponsored slot (MREC). Reserved 300x250 box + shimmer
-              + lazy-load → zero layout shift. No-op until `ad_home_inline_html`
-              is set by the admin. */}
-          <AdSlot
-            html={(settings as any).ad_home_inline_html}
-            minHeight={250}
-            minHeightDesktop={250}
-            label="Sponsored"
-            className="mt-6"
-          />
 
           {/* Admin-configured category rails (Homepage Builder), in order.
               Each streams independently so a slow category query never

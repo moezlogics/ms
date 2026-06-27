@@ -10,7 +10,7 @@ import { getCacheOptions } from "./cookies"
  * than any realistic taxonomy.
  */
 const CATEGORY_FIELDS =
-  "*category_children, *products, *parent_category, *parent_category.parent_category, *parent_category.parent_category.parent_category, *parent_category.parent_category.parent_category.parent_category, *parent_category.parent_category.parent_category.parent_category.parent_category, +metadata"
+  "*category_children, *parent_category, *parent_category.parent_category, *parent_category.parent_category.parent_category, *parent_category.parent_category.parent_category.parent_category, *parent_category.parent_category.parent_category.parent_category.parent_category, +metadata"
 
 export const listCategories = async (query?: Record<string, any>) => {
   const next = {

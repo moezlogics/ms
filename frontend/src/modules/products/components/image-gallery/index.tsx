@@ -216,7 +216,7 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass }:
                     fill
                     priority={activeIndex === 0}
                     sizes="50vw"
-                    quality={95}
+                    quality={80}
                     className={`object-cover ${isZooming ? "" : "transition-all duration-300 ease-in-out"}`}
                     style={isZooming ? {
                       transform: "scale(2)",

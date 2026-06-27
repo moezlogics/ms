@@ -1,14 +1,12 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import SpecSheet from "@modules/products/components/spec-sheet"
 import { buildSpecGroups } from "@lib/util/spec-groups"
 import {
   SpecTemplate,
   buildSpecGroupsFromTemplate,
 } from "@lib/util/spec-template"
-
-type TabKey = "english" | "urdu" | "specs" | "reviews"
 
 type Props = {
   /** Legacy single rich-description (back-compat). */
@@ -21,26 +19,22 @@ type Props = {
   plainDescription?: string | null
   /**
    * Raw `product.metadata.specs` JSON. When non-empty a
-   * "Specifications" tab appears between description and Reviews.
+   * "Specifications" section appears.
    */
   specs?: any
   /**
    * Raw `product.metadata.in_the_box` (array or comma/newline separated
-   * string). Rendered inside the Specifications tab below the spec
-   * table; the tab still surfaces even if specs are empty but the
-   * in-the-box list is populated.
+   * string). Rendered inside the Specifications section below the spec
+   * table.
    */
   inTheBox?: any
   /** ProductReviews slot — passed as children to keep server/client clean. */
   reviewsSlot: React.ReactNode
-  /** Number to render in the Reviews tab badge. */
+  /** Number to render in the Reviews nav badge. */
   reviewCount?: number
   /**
    * Optional spec template resolved from the product's primary
-   * category (or its ancestors). When provided, the Specifications
-   * tab renders sections in the admin-defined order with
-   * admin-defined labels and units. Falls back to the heuristic
-   * grouping for legacy products.
+   * category (or its ancestors).
    */
   template?: SpecTemplate | null
   similarBudgetSlot?: React.ReactNode
@@ -48,25 +42,18 @@ type Props = {
   sameBrandSlot?: React.ReactNode
 }
 
+type SectionKey = "specs" | "english" | "urdu" | "reviews"
+
 /**
- * Tabbed panel below the product hero. When the admin has supplied an
- * Urdu translation alongside the English copy, both tabs render so
- * customers can read either:
+ * Sequential product detail sections with sticky navigation.
  *
- *   [English]  [اردو]  [Reviews (12)]
- *    ─────────────────────────────
- *    Tab content...
+ * All sections (Specifications, Description, اردو, Reviews) render
+ * sequentially on one page. A sticky navigation bar at the top
+ * highlights the current section and clicking a nav item smooth-scrolls
+ * to that section.
  *
- * Tabs auto-hide when their data isn't present — e.g. a product
- * with only English copy shows just [English] and [Reviews].
- *
- * The Urdu container is wrapped with `lang="ur" dir="rtl"` so screen
- * readers and search engines correctly handle the script direction (this
- * is also a hard requirement for ranking on Urdu-language queries).
- *
- * Listens for clicks on `#reviews` anchor links (e.g. the rating link in
- * the product info) — when triggered, switches to the Reviews tab and
- * scrolls smoothly.
+ * Uses IntersectionObserver to track which section is in view and
+ * highlight the corresponding nav item.
  */
 export default function ProductDescriptionTabs({
   richDescription,
@@ -82,17 +69,11 @@ export default function ProductDescriptionTabs({
   similarSpecsSlot,
   sameBrandSlot,
 }: Props) {
-  // English content priority: explicit `_en` > legacy `richDescription` >
-  // plainDescription. We store all three because the legacy field may be
-  // English copy from before the dual-language migration.
   const englishHtml = (richDescriptionEn ?? richDescription)?.trim() || null
   const urduHtml = richDescriptionUr?.trim() || null
   const hasEnglish = !!(englishHtml || plainDescription)
   const hasUrdu = !!urduHtml
 
-  // Specifications tab shows when either the structured spec object
-  // has at least one renderable group OR the in-the-box list is
-  // populated. Compute once so the tab bar and panel agree.
   const specGroups = useMemo(
     () =>
       template
@@ -108,26 +89,105 @@ export default function ProductDescriptionTabs({
   }, [inTheBox])
   const hasSpecs = specGroups.length > 0 || hasInTheBox
 
-  const initialTab: TabKey = useMemo(() => {
-    if (hasSpecs) return "specs"
-    if (hasEnglish) return "english"
-    if (hasUrdu) return "urdu"
-    return "reviews"
-  }, [hasEnglish, hasUrdu, hasSpecs])
+  // Build list of visible sections
+  const sections = useMemo(() => {
+    const s: { key: SectionKey; label: string; lang?: string }[] = []
+    if (hasSpecs) s.push({ key: "specs", label: "Specifications" })
+    if (hasEnglish) s.push({ key: "english", label: "Description" })
+    if (hasUrdu) s.push({ key: "urdu", label: "اردو", lang: "ur" })
+    s.push({ key: "reviews", label: "Reviews" })
+    return s
+  }, [hasSpecs, hasEnglish, hasUrdu])
 
-  const [active, setActive] = useState<TabKey>(initialTab)
+  const [activeSection, setActiveSection] = useState<SectionKey>(
+    sections[0]?.key || "reviews"
+  )
+  const [isSticky, setIsSticky] = useState(false)
 
+  const navRef = useRef<HTMLDivElement>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const isScrollingRef = useRef(false)
+
+  // Assign a ref to a section
+  const setSectionRef = useCallback(
+    (key: string) => (el: HTMLDivElement | null) => {
+      sectionRefs.current[key] = el
+    },
+    []
+  )
+
+  // Sticky detection via sentinel IntersectionObserver
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsSticky(!entry.isIntersecting)
+      },
+      { threshold: 0 }
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [])
+
+  // Track active section via IntersectionObserver
+  useEffect(() => {
+    const observers: IntersectionObserver[] = []
+    const visibleSections = new Map<string, number>()
+
+    for (const section of sections) {
+      const el = sectionRefs.current[section.key]
+      if (!el) continue
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (isScrollingRef.current) return
+
+          if (entry.isIntersecting) {
+            visibleSections.set(section.key, entry.intersectionRatio)
+          } else {
+            visibleSections.delete(section.key)
+          }
+
+          // Pick the section with highest intersection ratio, or fall
+          // back to document order if ratios are equal
+          if (visibleSections.size > 0) {
+            let best: string | null = null
+            let bestRatio = -1
+            for (const s of sections) {
+              const ratio = visibleSections.get(s.key)
+              if (ratio !== undefined && ratio >= bestRatio) {
+                // For equal ratios, prefer the first one in document order
+                if (ratio > bestRatio || best === null) {
+                  best = s.key
+                  bestRatio = ratio
+                }
+              }
+            }
+            if (best) setActiveSection(best as SectionKey)
+          }
+        },
+        {
+          rootMargin: "-80px 0px -60% 0px",
+          threshold: [0, 0.1, 0.25, 0.5],
+        }
+      )
+      observer.observe(el)
+      observers.push(observer)
+    }
+
+    return () => observers.forEach((o) => o.disconnect())
+  }, [sections])
+
+  // Handle hash-based navigation (#reviews, #spec-row-*)
   useEffect(() => {
     const handleHashChange = () => {
       if (window.location.hash === "#reviews") {
-        setActive("reviews")
-        setTimeout(() => {
-          const el = document.getElementById("reviews")
-          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
-        }, 100)
+        scrollToSection("reviews")
       } else if (window.location.hash.startsWith("#spec-row-")) {
         const targetId = window.location.hash.substring(1)
-        setActive("specs")
         setTimeout(() => {
           const el = document.getElementById(targetId)
           if (el) {
@@ -139,7 +199,10 @@ export default function ProductDescriptionTabs({
       }
     }
 
-    if (window.location.hash === "#reviews" || window.location.hash.startsWith("#spec-row-")) {
+    if (
+      window.location.hash === "#reviews" ||
+      window.location.hash.startsWith("#spec-row-")
+    ) {
       handleHashChange()
     }
     window.addEventListener("hashchange", handleHashChange)
@@ -149,11 +212,7 @@ export default function ProductDescriptionTabs({
       const link = target.closest('a[href="#reviews"]')
       if (link) {
         e.preventDefault()
-        setActive("reviews")
-        setTimeout(() => {
-          const el = document.getElementById("reviews")
-          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
-        }, 100)
+        scrollToSection("reviews")
         return
       }
 
@@ -162,16 +221,12 @@ export default function ProductDescriptionTabs({
         e.preventDefault()
         const href = specLink.getAttribute("href")
         const targetId = href ? href.substring(1) : ""
-        setActive("specs")
         setTimeout(() => {
           const el = document.getElementById(targetId)
           if (el) {
             el.scrollIntoView({ behavior: "smooth", block: "nearest" })
             el.classList.add("bg-primary/5")
             setTimeout(() => el.classList.remove("bg-primary/5"), 1500)
-          } else {
-            const specsEl = document.getElementById("reviews")
-            if (specsEl) specsEl.scrollIntoView({ behavior: "smooth", block: "start" })
           }
         }, 120)
       }
@@ -184,106 +239,88 @@ export default function ProductDescriptionTabs({
     }
   }, [])
 
-  const tabBtnCls = (isActive: boolean) =>
-    `relative px-4 py-2.5 text-[13.5px] transition-colors ${
-      isActive ? "text-black font-extrabold" : "text-black/70 hover:text-black font-bold"
+  const scrollToSection = (key: string) => {
+    const el = sectionRefs.current[key]
+    if (!el) return
+
+    isScrollingRef.current = true
+    setActiveSection(key as SectionKey)
+
+    // Account for sticky nav height (~52px) plus some breathing room
+    const navHeight = navRef.current?.offsetHeight || 52
+    const y = el.getBoundingClientRect().top + window.scrollY - navHeight - 8
+
+    window.scrollTo({ top: y, behavior: "smooth" })
+
+    // Re-enable observer tracking after scroll settles
+    setTimeout(() => {
+      isScrollingRef.current = false
+    }, 800)
+  }
+
+  const navBtnCls = (isActive: boolean) =>
+    `relative px-4 py-2.5 text-[13.5px] whitespace-nowrap transition-colors ${
+      isActive
+        ? "text-black font-extrabold"
+        : "text-black/70 hover:text-black font-bold"
     }`
 
   return (
     <div className="w-full">
-      {/* Tab bar */}
-      <div className="flex items-center gap-0 border-b border-line" role="tablist">
-        {hasSpecs && (
-          <button
-            role="tab"
-            aria-selected={active === "specs"}
-            onClick={() => setActive("specs")}
-            className={tabBtnCls(active === "specs")}
-          >
-            Specifications
-            {active === "specs" && (
-              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
-            )}
-          </button>
-        )}
+      {/* Sentinel — when this scrolls out of view, the nav becomes sticky */}
+      <div ref={sentinelRef} className="h-0 w-full" aria-hidden />
 
-        {hasEnglish && (
-          <button
-            role="tab"
-            aria-selected={active === "english"}
-            onClick={() => setActive("english")}
-            className={tabBtnCls(active === "english")}
-          >
-            Description
-            {active === "english" && (
-              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
-            )}
-          </button>
-        )}
-
-        {hasUrdu && (
-          <button
-            role="tab"
-            aria-selected={active === "urdu"}
-            onClick={() => setActive("urdu")}
-            className={tabBtnCls(active === "urdu")}
-            lang="ur"
-          >
-            اردو
-            {active === "urdu" && (
-              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
-            )}
-          </button>
-        )}
-
-        <button
-          role="tab"
-          aria-selected={active === "reviews"}
-          onClick={() => setActive("reviews")}
-          className={`${tabBtnCls(active === "reviews")} inline-flex items-center gap-1.5`}
+      {/* Sticky navigation bar */}
+      <div
+        ref={navRef}
+        className={`bg-white/95 backdrop-blur-sm z-30 transition-shadow duration-200 ${
+          isSticky
+            ? "sticky top-0 shadow-[0_2px_8px_rgba(0,0,0,0.08)] border-b border-line"
+            : "border-b border-line"
+        }`}
+        role="navigation"
+        aria-label="Product sections"
+      >
+        <div
+          className="flex items-center gap-0 overflow-x-auto"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          Reviews
-          {typeof reviewCount === "number" && reviewCount > 0 && (
-            <span className="inline-flex items-center justify-center h-[18px] min-w-[18px] px-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
-              {reviewCount}
-            </span>
-          )}
-          {active === "reviews" && (
-            <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
-          )}
-        </button>
+          {sections.map((s) => (
+            <button
+              key={s.key}
+              onClick={() => scrollToSection(s.key)}
+              className={navBtnCls(activeSection === s.key)}
+              {...(s.lang ? { lang: s.lang } : {})}
+            >
+              {s.label}
+              {s.key === "reviews" &&
+                typeof reviewCount === "number" &&
+                reviewCount > 0 && (
+                  <span className="ml-1.5 inline-flex items-center justify-center h-[18px] min-w-[18px] px-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                    {reviewCount}
+                  </span>
+                )}
+              {activeSection === s.key && (
+                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full" />
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Tab panels */}
-      <div className="pt-4 pb-2" role="tabpanel">
-        {active === "english" && hasEnglish && (
+      {/* All sections rendered sequentially */}
+      <div className="flex flex-col">
+        {/* Specifications */}
+        {hasSpecs && (
           <div
-            lang="en"
-            className="prose prose-sm max-w-none text-ink/80 leading-relaxed"
+            ref={setSectionRef("specs")}
+            id="section-specs"
+            className="pt-6 pb-8 scroll-mt-20"
           >
-            <h2 className="sr-only">Product Description</h2>
-            {englishHtml ? (
-              <div dangerouslySetInnerHTML={{ __html: englishHtml }} />
-            ) : (
-              <p className="whitespace-pre-line">{plainDescription}</p>
-            )}
-          </div>
-        )}
-
-        {active === "urdu" && hasUrdu && (
-          <div
-            lang="ur"
-            dir="rtl"
-            className="prose prose-sm max-w-none text-ink/80 leading-loose font-[400] text-right"
-          >
-            <h2 className="sr-only" lang="ur">مصنوعات کی تفصیل</h2>
-            <div dangerouslySetInnerHTML={{ __html: urduHtml! }} />
-          </div>
-        )}
-
-        {active === "specs" && hasSpecs && (
-          <div className="pt-2 pb-4">
-            <h2 className="sr-only">Product Specifications</h2>
+            <h2 className="text-[15px] md:text-base font-extrabold text-black mb-4 flex items-center gap-2">
+              <i className="ph-bold ph-list-dashes text-primary text-[18px]" aria-hidden />
+              Specifications
+            </h2>
             <SpecSheet
               specs={specs}
               inTheBox={inTheBox}
@@ -295,12 +332,72 @@ export default function ProductDescriptionTabs({
           </div>
         )}
 
-        {active === "reviews" && (
-          <div>
-            <h2 className="sr-only">Customer Reviews</h2>
-            {reviewsSlot}
+        {/* Description — English */}
+        {hasEnglish && (
+          <div
+            ref={setSectionRef("english")}
+            id="section-description"
+            className="pt-6 pb-8 border-t border-line/50 scroll-mt-20"
+          >
+            <h2 className="text-[15px] md:text-base font-extrabold text-black mb-4 flex items-center gap-2">
+              <i className="ph-bold ph-article text-primary text-[18px]" aria-hidden />
+              Description
+            </h2>
+            <div
+              lang="en"
+              className="prose prose-sm max-w-none text-ink/80 leading-relaxed"
+            >
+              {englishHtml ? (
+                <div dangerouslySetInnerHTML={{ __html: englishHtml }} />
+              ) : (
+                <p className="whitespace-pre-line">{plainDescription}</p>
+              )}
+            </div>
           </div>
         )}
+
+        {/* Description — Urdu */}
+        {hasUrdu && (
+          <div
+            ref={setSectionRef("urdu")}
+            id="section-urdu"
+            className="pt-6 pb-8 border-t border-line/50 scroll-mt-20"
+          >
+            <h2
+              className="text-[15px] md:text-base font-extrabold text-black mb-4 flex items-center gap-2"
+              lang="ur"
+              dir="rtl"
+            >
+              <i className="ph-bold ph-article text-primary text-[18px]" aria-hidden />
+              اردو تفصیل
+            </h2>
+            <div
+              lang="ur"
+              dir="rtl"
+              className="prose prose-sm max-w-none text-ink/80 leading-loose font-[400] text-right"
+            >
+              <div dangerouslySetInnerHTML={{ __html: urduHtml! }} />
+            </div>
+          </div>
+        )}
+
+        {/* Reviews */}
+        <div
+          ref={setSectionRef("reviews")}
+          id="section-reviews"
+          className="pt-6 pb-8 border-t border-line/50 scroll-mt-20"
+        >
+          <h2 className="text-[15px] md:text-base font-extrabold text-black mb-4 flex items-center gap-2">
+            <i className="ph-bold ph-star text-primary text-[18px]" aria-hidden />
+            Reviews
+            {typeof reviewCount === "number" && reviewCount > 0 && (
+              <span className="inline-flex items-center justify-center h-[22px] min-w-[22px] px-1.5 rounded-full bg-primary/10 text-primary text-[11px] font-bold">
+                {reviewCount}
+              </span>
+            )}
+          </h2>
+          {reviewsSlot}
+        </div>
       </div>
     </div>
   )

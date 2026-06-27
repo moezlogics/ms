@@ -29,7 +29,6 @@ import PreorderBanner from "@modules/products/components/preorder-banner"
 import { getBundlesForProduct } from "@lib/data/bundles"
 import { getFirstResolvedTemplate } from "@lib/data/spec-templates"
 import { getSiteSettings, resolveProductCardAspectClass } from "@lib/data/site-settings"
-import AdSlot from "@modules/common/components/ad-slot"
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
@@ -570,19 +569,8 @@ const ProductTemplate = async ({
         </div>
       </div>
 
-      {/* Sponsored slot below the product details — reserved height + shimmer
-          + lazy-load (zero layout shift). No-op until `ad_pdp_html` is set. */}
-      <div className="container-anvogue my-4 md:my-6">
-        <AdSlot
-          html={(settings as any).ad_pdp_html}
-          minHeight={250}
-          minHeightDesktop={250}
-          label="Sponsored"
-        />
-      </div>
-
-      {/* Description + Reviews — tabbed layout (English / اردو / Reviews) */}
-      <div id="reviews" className="container-anvogue my-6 md:my-10 scroll-mt-20">
+      {/* Description + Reviews — sequential layout with sticky nav */}
+      <div id="reviews" className="container-anvogue my-6 md:my-10 scroll-mt-16">
         <ProductDescriptionTabs
           richDescription={(product.metadata as any)?.rich_description || null}
           richDescriptionEn={(product.metadata as any)?.rich_description_en || null}

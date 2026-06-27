@@ -16,11 +16,12 @@ import Avatar, {
   getAvatarPropsFromCustomer,
 } from "@modules/common/components/avatar"
 
-import Lightbox from "yet-another-react-lightbox"
-import Counter from "yet-another-react-lightbox/plugins/counter"
-import Zoom from "yet-another-react-lightbox/plugins/zoom"
-import "yet-another-react-lightbox/styles.css"
-import "yet-another-react-lightbox/plugins/counter.css"
+import dynamic from "next/dynamic"
+
+// Heavy lightbox (+ plugins + CSS) split into its own chunk and mounted
+// only when a review photo is actually opened — keeps it out of the PDP
+// bundle for the majority of visitors who never open one.
+const ReviewLightbox = dynamic(() => import("./review-lightbox"), { ssr: false })
 
 const RATING_LABELS = ["", "Poor", "Below Average", "Average", "Good", "Excellent"]
 const MAX_REVIEW_PHOTOS = 5
@@ -502,14 +503,14 @@ export default function ProductReviews({ productId, productTitle }: { productId:
         }}
       />
 
-      <Lightbox
+      {lightboxOpen && (
+        <ReviewLightbox
           open={lightboxOpen}
           close={() => setLightboxOpen(false)}
           index={lightboxIndex}
           slides={lightboxSlides}
-          plugins={[Counter, Zoom]}
-          carousel={{ finite: lightboxSlides.length <= 1 }}
-      />
+        />
+      )}
     </section>
   )
 }

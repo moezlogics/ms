@@ -52,12 +52,6 @@ const DEFAULT_KEYS = [
   "google_analytics_id",
   "meta_pixel_id",
   "head_code",
-  // Per-placement ad-unit HTML (rendered via the storefront <AdSlot> with a
-  // reserved fixed-size box + shimmer loader + lazy-load = zero layout shift)
-  "ad_home_top_html",
-  "ad_home_inline_html",
-  "ad_listing_html",
-  "ad_pdp_html",
   // Storefront appearance
   "product_card_aspect",
   "whatsapp_number",
@@ -680,58 +674,6 @@ const Page = () => {
             onChange={(e: any) => set("head_code", e.target.value)}
             placeholder={`<meta name="google-site-verification" content="..." />\n<script async src="https://pagead2.googlesyndication.com/..."></script>`}
             rows={8}
-            style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: 12 }}
-          />
-        </Field>
-      </Section>
-
-      <Section
-        title="Sponsored Ad Slots"
-        description="Optional ad units shown in fixed-size slots with a shimmer loader + lazy-loading, so ads never push content around (CarWale-style, zero layout shift). Paste a MANUAL ad unit (e.g. an AdSense <ins class='adsbygoogle'> block + its push <script>), NOT Auto Ads — the slot size must be known up front. The ad network's loader script itself still goes in Custom Head Code above. Leave a slot empty to hide it."
-      >
-        <Field
-          label="Homepage — Top Leaderboard (≈ 320×100 mobile / 728×90 desktop)"
-          help="Renders just under the hero banner."
-        >
-          <Textarea
-            value={settings.ad_home_top_html}
-            onChange={(e: any) => set("ad_home_top_html", e.target.value)}
-            placeholder={`<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXX" data-ad-slot="1234567890" data-ad-format="auto" data-full-width-responsive="true"></ins>\n<script>(adsbygoogle = window.adsbygoogle || []).push({})</script>`}
-            rows={5}
-            style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: 12 }}
-          />
-        </Field>
-        <Field
-          label="Homepage — In-content (≈ 300×250 MREC)"
-          help="Renders after the first product rail on the homepage."
-        >
-          <Textarea
-            value={settings.ad_home_inline_html}
-            onChange={(e: any) => set("ad_home_inline_html", e.target.value)}
-            placeholder={`<ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-XXXX" data-ad-slot="1234567890"></ins>\n<script>(adsbygoogle = window.adsbygoogle || []).push({})</script>`}
-            rows={5}
-            style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: 12 }}
-          />
-        </Field>
-        <Field
-          label="Listing pages — In-grid (≈ 300×250)"
-          help="Reserved for store / category listing pages."
-        >
-          <Textarea
-            value={settings.ad_listing_html}
-            onChange={(e: any) => set("ad_listing_html", e.target.value)}
-            rows={5}
-            style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: 12 }}
-          />
-        </Field>
-        <Field
-          label="Product page — Below details (≈ 300×250)"
-          help="Reserved for the product detail page."
-        >
-          <Textarea
-            value={settings.ad_pdp_html}
-            onChange={(e: any) => set("ad_pdp_html", e.target.value)}
-            rows={5}
             style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: 12 }}
           />
         </Field>

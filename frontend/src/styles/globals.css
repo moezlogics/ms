@@ -775,68 +775,6 @@ label {
   }
 }
 
-/* ── Ad slots (CarWale-style: reserve space + shimmer, zero CLS) ──────
-   <AdSlot> reserves its height up-front via the --ad-mh / --ad-mh-d CSS
-   vars so the box occupies full size from first paint and the creative
-   never pushes content down when it arrives. A calm shimmer fills the
-   reserved box while the ad lazy-loads. */
-.ad-slot {
-  position: relative;
-  width: 100%;
-  min-height: var(--ad-mh, 100px);
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-@media (min-width: 1024px) {
-  .ad-slot {
-    min-height: var(--ad-mh-d, var(--ad-mh, 100px));
-  }
-}
-.ad-slot__inner {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.ad-slot__inner:empty {
-  display: none;
-}
-.ad-slot__placeholder {
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(
-    90deg,
-    rgb(var(--color-text) / 0.04) 25%,
-    rgb(var(--color-text) / 0.08) 37%,
-    rgb(var(--color-text) / 0.04) 63%
-  );
-  background-size: 400% 100%;
-  animation: adShimmer 1.4s ease infinite;
-}
-.ad-slot__label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgb(var(--color-text) / 0.28);
-}
-@keyframes adShimmer {
-  0% { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ad-slot__placeholder {
-    animation: none;
-  }
-}
-
 /* Hide mobile bottom navigation bar on product pages */
 body.is-pdp-page nav[role="navigation"],
 body.is-pdp-page div.small\:hidden.h-\[var\(--mobile-tabbar-h\,44px\)\] {
