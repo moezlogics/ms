@@ -123,14 +123,14 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   type="button"
                   onClick={open}
                   data-testid="mobile-actions-button"
-                  className="h-11 px-4 rounded-full bg-surface text-black text-sm font-semibold border border-line flex items-center justify-between gap-2 hover:border-primary transition-colors"
+                  className="h-11 px-4 rounded-full bg-surface text-black text-sm font-bold border border-line flex items-center justify-between gap-2 hover:border-primary transition-colors"
                 >
                   <span className="truncate">
                     {variant
                       ? Object.values(options).join(" / ")
                       : "Select options"}
                   </span>
-                  <ChevronDown />
+                  <i className="ph-bold ph-caret-down text-[16px]" aria-hidden />
                 </button>
               )}
               <button

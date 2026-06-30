@@ -107,7 +107,7 @@ export default function SpotlightCard({ productPath,
         <LocalizedClientLink
           href={productPath || `/products/${product.handle}`}
           data-testid="product-title"
-          className="text-sm font-semibold text-ink hover:text-primary transition-colors line-clamp-2 leading-snug"
+          className="text-sm font-semibold text-black hover:text-primary transition-colors line-clamp-2 leading-snug"
         >
           {product.title}
         </LocalizedClientLink>
@@ -117,7 +117,7 @@ export default function SpotlightCard({ productPath,
             <div className="flex items-baseline gap-2">
               <span
                 className={`inline-flex items-center text-sm font-bold ${
-                  isSale ? "text-danger" : "text-ink"
+                  isSale ? "text-danger" : "text-black"
                 }`}
               >
                 {cheapestPrice.calculated_price}

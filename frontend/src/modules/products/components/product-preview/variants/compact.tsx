@@ -65,14 +65,14 @@ export default function CompactCard({ productPath,
         <LocalizedClientLink
           href={productPath || `/products/${product.handle}`}
           data-testid="product-title"
-          className="text-[13px] font-semibold text-ink hover:text-primary transition-colors line-clamp-1 leading-snug"
+          className="text-[13px] font-semibold text-black hover:text-primary transition-colors line-clamp-1 leading-snug"
         >
           {product.title}
         </LocalizedClientLink>
 
         {cheapestPrice && (
           <div className="flex items-baseline gap-1.5">
-            <span className={`text-[13px] font-semibold ${isSale ? "text-danger" : "text-ink"}`}>
+            <span className={`text-[13px] font-semibold ${isSale ? "text-danger" : "text-black"}`}>
               {cheapestPrice.calculated_price}
             </span>
             {isSale && (

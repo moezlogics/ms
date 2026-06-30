@@ -78,7 +78,7 @@ export default function MinimalCard({ productPath,
         <LocalizedClientLink
           href={productPath || `/products/${product.handle}`}
           data-testid="product-title"
-          className="text-sm font-semibold text-ink hover:text-primary transition-colors line-clamp-2 leading-snug"
+          className="text-sm font-semibold text-black hover:text-primary transition-colors line-clamp-2 leading-snug"
         >
           {product.title}
         </LocalizedClientLink>
@@ -90,7 +90,7 @@ export default function MinimalCard({ productPath,
                 {cheapestPrice.original_price}
               </span>
             )}
-            <span className={`text-sm font-semibold ${isSale ? "text-danger" : "text-ink"}`}>
+            <span className={`text-sm font-semibold ${isSale ? "text-danger" : "text-black"}`}>
               {cheapestPrice.calculated_price}
             </span>
           </div>
