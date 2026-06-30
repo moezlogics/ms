@@ -71,7 +71,7 @@ export default function MobileBrandsSidebar({ brands }: Props) {
               <i className="ph-bold ph-squares-four text-lg small:text-2xl" />
             </div>
             
-            <span className="text-[9px] small:text-[12.5px] leading-tight font-medium text-black/60 small:text-black group-hover:text-primary break-words max-w-[54px] small:max-w-[76px] transition-colors">
+            <span className="text-[9px] small:text-[12.5px] leading-tight font-semibold text-black/60 small:text-black group-hover:text-primary break-words max-w-[54px] small:max-w-[76px] transition-colors">
               Shop All
             </span>
           </LocalizedClientLink>
@@ -129,7 +129,7 @@ export default function MobileBrandsSidebar({ brands }: Props) {
                 </div>
 
                 {/* Brand Label */}
-                <span className="text-[9px] small:text-[12.5px] leading-tight font-medium text-black/60 small:text-black group-hover:text-primary break-words max-w-[54px] small:max-w-[76px] transition-colors">
+                <span className="text-[9px] small:text-[12.5px] leading-tight font-semibold text-black/60 small:text-black group-hover:text-primary break-words max-w-[54px] small:max-w-[76px] transition-colors">
                   {brand.name}
                 </span>
               </LocalizedClientLink>

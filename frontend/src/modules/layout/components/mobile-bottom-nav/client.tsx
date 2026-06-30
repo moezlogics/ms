@@ -336,9 +336,9 @@ export default function MobileBottomNavClient({
               <span
                 className={[
                   "relative flex flex-col items-center justify-center gap-0.5 w-full h-full",
-                  "text-[11px] font-semibold tracking-wide",
+                  "text-[11px] font-bold tracking-wide",
                   "motion-safe:transition-colors motion-safe:duration-200",
-                  active ? "text-primary" : "text-ink/55 hover:text-ink",
+                  active ? "text-primary" : "text-black",
                 ].join(" ")}
               >
                 {/* Icon container — pops on active state with a
@@ -369,7 +369,7 @@ export default function MobileBottomNavClient({
 
                   <i
                     className={[
-                      active ? "ph-fill" : "ph",
+                      active ? "ph-fill" : "ph-bold",
                       `ph-${s.icon}`,
                       "text-[22px] leading-none relative z-10",
                       "motion-safe:transition-transform motion-safe:duration-300",

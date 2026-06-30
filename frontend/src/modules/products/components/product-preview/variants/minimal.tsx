@@ -78,7 +78,7 @@ export default function MinimalCard({ productPath,
         <LocalizedClientLink
           href={productPath || `/products/${product.handle}`}
           data-testid="product-title"
-          className="text-sm text-ink hover:text-primary transition-colors line-clamp-2 leading-snug"
+          className="text-sm font-semibold text-ink hover:text-primary transition-colors line-clamp-2 leading-snug"
         >
           {product.title}
         </LocalizedClientLink>

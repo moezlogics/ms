@@ -65,7 +65,7 @@ export default function CompactCard({ productPath,
         <LocalizedClientLink
           href={productPath || `/products/${product.handle}`}
           data-testid="product-title"
-          className="text-[13px] text-ink hover:text-primary transition-colors line-clamp-1 leading-snug"
+          className="text-[13px] font-semibold text-ink hover:text-primary transition-colors line-clamp-1 leading-snug"
         >
           {product.title}
         </LocalizedClientLink>
