@@ -200,7 +200,7 @@ export default function MobileBottomNavClient({
           {/* Top portion (44px) with the curve in the middle */}
           <div className="flex h-[44px] w-full items-stretch">
             <div 
-              className="flex-1 bg-bg/98 supports-[backdrop-filter]:bg-bg/92 backdrop-blur-xl border-t" 
+              className="flex-1 bg-bg/95 supports-[backdrop-filter]:bg-bg/90 backdrop-blur-xl border-t" 
               style={{ 
                 borderTopColor: "var(--hex-mobile-footer-border, rgb(var(--color-mobile-footer-border, var(--color-border, 233 233 233))))",
                 borderTopLeftRadius: "var(--radius-mobile-footer)",
@@ -218,7 +218,7 @@ export default function MobileBottomNavClient({
                 <path
                   d="M 0 0 L 15 0 C 30 0, 32 24, 50 24 C 68 24, 70 0, 85 0 L 100 0 L 100 44 L 0 44 Z"
                   fill="var(--hex-bg, #FFFFFF)"
-                  className="opacity-[0.97]"
+                  className="opacity-95"
                 />
                 {/* Smooth continuous border stroke */}
                 <path
@@ -230,7 +230,7 @@ export default function MobileBottomNavClient({
               </svg>
             </div>
             <div 
-              className="flex-1 bg-bg/98 supports-[backdrop-filter]:bg-bg/92 backdrop-blur-xl border-t" 
+              className="flex-1 bg-bg/95 supports-[backdrop-filter]:bg-bg/90 backdrop-blur-xl border-t" 
               style={{ 
                 borderTopColor: "var(--hex-mobile-footer-border, rgb(var(--color-mobile-footer-border, var(--color-border, 233 233 233))))",
                 borderTopRightRadius: "var(--radius-mobile-footer)",
@@ -238,7 +238,7 @@ export default function MobileBottomNavClient({
             />
           </div>
           {/* Bottom portion (safe area) */}
-          <div className="flex-1 bg-bg/98 supports-[backdrop-filter]:bg-bg/92 backdrop-blur-xl" />
+          <div className="flex-1 bg-bg/95 supports-[backdrop-filter]:bg-bg/90 backdrop-blur-xl" />
         </div>
 
         {/* Active-tab top accent dot — sits above the icon, animates
