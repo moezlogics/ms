@@ -109,32 +109,22 @@ export default async function Nav() {
           >
             <Logo size="sm" isMobile />
           </LocalizedClientLink>
-          <LocalizedClientLink
-            href="/account"
-            aria-label={customer ? "Account" : "Sign in"}
-            className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-header-hover text-header-fg hover:text-header-accent transition-all active:scale-90 relative"
-          >
-            <i className="ph-bold ph-user text-[24px]" aria-hidden />
-            {customer && (
-              <span
-                className="absolute top-3.5 right-3.5 w-2 h-2 rounded-full bg-success border border-header"
-                aria-hidden
-              />
-            )}
-          </LocalizedClientLink>
-          <Suspense
-            fallback={
-              <LocalizedClientLink
-                href="/cart"
-                aria-label="Cart"
-                className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-header-hover text-header-fg hover:text-header-accent transition-all active:scale-90"
-              >
-                <i className="ph-bold ph-handbag text-[24px]" aria-hidden />
-              </LocalizedClientLink>
-            }
-          >
-            <CartButton />
-          </Suspense>
+
+          <div className="w-12 h-12 flex items-center justify-center shrink-0">
+            <Suspense
+              fallback={
+                <LocalizedClientLink
+                  href="/cart"
+                  aria-label="Cart"
+                  className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-header-hover text-header-fg hover:text-header-accent transition-all active:scale-90"
+                >
+                  <i className="ph-bold ph-handbag text-[24px]" aria-hidden />
+                </LocalizedClientLink>
+              }
+            >
+              <CartButton />
+            </Suspense>
+          </div>
         </div>
       </div>
 
