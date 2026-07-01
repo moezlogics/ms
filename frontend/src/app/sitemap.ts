@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next"
 import { listBlogPosts, listBlogCategories } from "@lib/data/blog"
-import { listBrands } from "@lib/data/brands"
+import { listBrands, getProductBrandMap } from "@lib/data/brands"
 import { getBaseURL } from "@lib/util/env"
 import { buildCategoryPath } from "@lib/util/category-path"
 import { buildBrandPath } from "@lib/util/brand-path"
@@ -402,20 +402,27 @@ async function buildProductChunk(
 
   // Fetch the page once using the first country (region affects price, not slug)
   let products: any[] = []
+  let brandMap: Record<string, any> = {}
   try {
     const { response } = await listProducts({
       countryCode: countryCodes[0],
       pageParam,
-      queryParams: { limit: PAGE_SIZE, fields: "handle,updated_at,*categories,metadata" },
+      queryParams: { limit: PAGE_SIZE, fields: "id,handle,updated_at,*categories,metadata" },
     })
     products = response?.products || []
+
+    const productIds = products.map((p) => p.id).filter(Boolean)
+    if (productIds.length > 0) {
+      brandMap = await getProductBrandMap(productIds).catch(() => ({}))
+    }
   } catch (e) {
     console.error(`[sitemap] listProducts page ${pageParam} failed`, e)
   }
 
   for (const p of products) {
     if (!p.handle) continue
-    const path = getProductPath(p)
+    const brand = brandMap[p.id]
+    const path = getProductPath(p, brand)
     entries.push(
       entry(
         baseUrl,

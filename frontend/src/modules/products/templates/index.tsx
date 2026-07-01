@@ -18,6 +18,7 @@ import { buildSpecMap } from "@lib/util/spec-groups"
 import { getPreorderState } from "@lib/util/preorder"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { getProductPath } from "@lib/util/product"
+import { canonicalUrl } from "@lib/util/seo-url"
 
 import FrequentlyBoughtTogether from "@modules/products/components/frequently-bought-together"
 import ProductActionsWrapper from "./product-actions-wrapper"
@@ -265,7 +266,7 @@ const ProductTemplate = async ({
     return Number.isFinite(n) && n > 0 ? n : undefined
   })()
 
-  const productUrl = `${getBaseURL()}/${countryCode}${getProductPath(product, brand)}`
+  const productUrl = canonicalUrl(getProductPath(product, brand))
   const sellerRef = { "@id": `${getBaseURL()}/#organization` }
 
   // Try to find a valid price from the cheapest variant or metadata specs.
