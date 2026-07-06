@@ -204,7 +204,7 @@ const ProductTemplate = async ({
     />
   )
 
-  const galleryNode = (
+  const makeGalleryNode = (withPriority: boolean) => (
     <Suspense fallback={galleryFallback}>
       <ImageGalleryBridge
         images={images}
@@ -213,6 +213,7 @@ const ProductTemplate = async ({
         altFallback={galleryAltFallback}
         aspectRatioClass={aspectRatioClass}
         variantImageIds={variantImageIds}
+        priority={withPriority}
       />
     </Suspense>
   )
@@ -551,7 +552,7 @@ const ProductTemplate = async ({
           {/* 50/50 Side-by-Side Gallery & Specs */}
           <div className="grid grid-cols-2 gap-1.5 mb-2 items-start">
             <div className="min-w-0">
-              {galleryNode}
+              {makeGalleryNode(true)}
               <ProductInfo product={product} mode="brand-only" />
             </div>
             <div className="min-w-0 flex flex-col gap-2">
@@ -582,7 +583,7 @@ const ProductTemplate = async ({
         <div className="hidden lg:grid lg:grid-cols-[1.15fr_1fr] gap-3 lg:gap-4">
           {/* Gallery — left column */}
           <div className="w-full">
-            {galleryNode}
+            {makeGalleryNode(false)}
           </div>
 
           {/* Info / actions — right column */}
