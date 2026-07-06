@@ -1,6 +1,8 @@
 "use client"
 
 import { useUserData } from "@lib/context/user-data-context"
+import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
 import MobileBottomNavClient from "./client"
 
 /**
@@ -13,6 +15,23 @@ import MobileBottomNavClient from "./client"
  */
 export default function MobileBottomNav() {
   const { cart, customer } = useUserData()
+  const pathname = usePathname()
+  const [isPdp, setIsPdp] = useState(false)
+
+  useEffect(() => {
+    const checkPdp = () => {
+      setIsPdp(document.body.classList.contains("is-pdp-page"))
+    }
+    checkPdp()
+
+    const observer = new MutationObserver(checkPdp)
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] })
+    return () => observer.disconnect()
+  }, [pathname])
+
+  if (isPdp) {
+    return null
+  }
 
   const itemCount =
     cart?.items?.reduce((sum: number, i: any) => sum + (i?.quantity || 0), 0) ||
