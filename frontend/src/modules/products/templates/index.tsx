@@ -218,13 +218,6 @@ const ProductTemplate = async ({
     </Suspense>
   )
 
-  const actionsFallback = (
-    <div className="flex flex-col gap-3 animate-pulse" aria-hidden>
-      <div className="h-7 w-28 bg-surface rounded-md" />
-      <div className="h-12 w-full bg-surface rounded-full" />
-    </div>
-  )
-
   let allProducts: any[] = allProductsResult.response.products || []
 
   // Fallback: if category has very few products, fetch from general store to ensure recommendations are rendered (cap at 24 to keep TTFB fast)
@@ -564,14 +557,12 @@ const ProductTemplate = async ({
           <div className="flex flex-col gap-3.5 mb-6">
             <PreorderBanner metadata={clientProduct.metadata} />
             <ProductOnboardingCta />
-            <Suspense fallback={actionsFallback}>
-              <ProductActions
-                product={clientProduct}
-                region={region}
-                whatsappNumber={whatsappNumber}
-                whatsappBuyNowEnabled={whatsappBuyNowEnabled}
-              />
-            </Suspense>
+            <ProductActions
+              product={clientProduct}
+              region={region}
+              whatsappNumber={whatsappNumber}
+              whatsappBuyNowEnabled={whatsappBuyNowEnabled}
+            />
             {bundles && bundles.length > 0 && (
               <BundleCard bundles={bundles} />
             )}
@@ -600,14 +591,12 @@ const ProductTemplate = async ({
 
               <ProductOnboardingCta />
 
-              <Suspense fallback={actionsFallback}>
-                <ProductActions
-                  product={clientProduct}
-                  region={region}
-                  whatsappNumber={whatsappNumber}
-                  whatsappBuyNowEnabled={whatsappBuyNowEnabled}
-                />
-              </Suspense>
+              <ProductActions
+                product={clientProduct}
+                region={region}
+                whatsappNumber={whatsappNumber}
+                whatsappBuyNowEnabled={whatsappBuyNowEnabled}
+              />
 
               {bundles && bundles.length > 0 && (
                 <BundleCard bundles={bundles} />

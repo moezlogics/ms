@@ -6,7 +6,7 @@ import { notifyCartUpdated } from "@lib/context/user-data-context"
 
 import { HttpTypes } from "@medusajs/types"
 import { isEqual } from "lodash"
-import { useParams, usePathname, useSearchParams } from "next/navigation"
+import { useParams, usePathname } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 
@@ -50,7 +50,6 @@ export default function ProductActions({
 }: ProductActionsProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [qty, setQty] = useState(1)
@@ -106,7 +105,9 @@ export default function ProductActions({
     const totalVariants = product.variants?.length ?? 0
     if (totalVariants <= 1) return
 
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(
+      typeof window !== "undefined" ? window.location.search : ""
+    )
     const value = isValidVariant ? selectedVariant?.id : null
 
     if (params.get("v_id") === value) return
@@ -116,7 +117,7 @@ export default function ProductActions({
 
     const qs = params.toString()
     router.replace(qs ? `${pathname}?${qs}` : pathname)
-  }, [selectedVariant, isValidVariant])
+  }, [selectedVariant, isValidVariant, pathname, product.variants, router])
 
   const inStock = useMemo(() => {
     if (selectedVariant && !selectedVariant.manage_inventory) return true
