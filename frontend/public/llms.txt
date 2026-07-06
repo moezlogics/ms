@@ -1,0 +1,10 @@
+# Mobile Store
+
+> The premier online destination for mobile devices, smartwatches, and premium accessories in Pakistan.
+
+## Navigation
+
+- [Home](/) - The homepage with featured category rails, popular brands, and current promotional campaigns.
+- [Store](/store) - Browse all mobile and electronics products. Supports filtering by brand, category, price range, and product specifications.
+- [Brands](/brands) - View all trusted manufacturers and brands.
+- [Blog](/blog) - Read the latest reviews, comparisons, and technology articles.

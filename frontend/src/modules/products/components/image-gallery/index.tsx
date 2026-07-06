@@ -340,7 +340,7 @@ const ImageGallery = ({
                   key={item.id || i}
                   role="button"
                   tabIndex={0}
-                  aria-selected={isActive}
+                  aria-pressed={isActive}
                   onClick={() => handleThumbnailClick(i)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
