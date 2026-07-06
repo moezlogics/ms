@@ -21,7 +21,7 @@ import { getProductPath } from "@lib/util/product"
 import { canonicalUrl } from "@lib/util/seo-url"
 
 import FrequentlyBoughtTogether from "@modules/products/components/frequently-bought-together"
-import ProductActionsWrapper from "./product-actions-wrapper"
+import { slimProductForClient } from "@lib/util/slim-product"
 import ProductReviews from "@modules/products/components/product-reviews"
 import ProductDescriptionTabs from "@modules/products/components/product-description-tabs"
 import ProductViewTracker from "@modules/analytics/product-view-tracker"
@@ -160,6 +160,28 @@ const ProductTemplate = async ({
     ])
 
   const aspectRatioClass = resolveProductCardAspectClass(settings || {})
+
+  // ONE slim copy of the product for ALL client components. Passing the
+  // full product (with 11KB+ rich descriptions in metadata) to
+  // ProductActions/ProductTabs serialized it 3× into the flight payload —
+  // measured ~42KB of duplicate JSON on every PDP response. Sharing the
+  // same object reference also lets React dedupe it across the mobile +
+  // desktop layout instances.
+  const clientProduct = slimProductForClient(product)
+
+  // ?v_id=… narrows the gallery to a variant's images CLIENT-side (an ISR
+  // page cannot read the query string server-side).
+  const variantImageIds: Record<string, string[]> = {}
+  for (const v of product.variants ?? []) {
+    const ids = ((v as any).images ?? [])
+      .map((i: any) => i?.id)
+      .filter(Boolean)
+    if (ids.length > 0) variantImageIds[v.id] = ids
+  }
+
+  const whatsappNumber = (settings as any).whatsapp_number?.trim() || undefined
+  const whatsappBuyNowEnabled =
+    (settings as any).whatsapp_buy_now_enabled !== "false"
 
   let allProducts: any[] = allProductsResult.response.products || []
 
@@ -491,6 +513,7 @@ const ProductTemplate = async ({
                 altMap={altMap}
                 altFallback={product.title || "Product image"}
                 aspectRatioClass={aspectRatioClass}
+                variantImageIds={variantImageIds}
               />
               <ProductInfo product={product} mode="brand-only" />
             </div>
@@ -501,23 +524,18 @@ const ProductTemplate = async ({
 
           {/* Mobile Actions Stack */}
           <div className="flex flex-col gap-3.5 mb-6">
-            <PreorderBanner metadata={product.metadata} />
+            <PreorderBanner metadata={clientProduct.metadata} />
             <ProductOnboardingCta />
-            <Suspense
-              fallback={
-                <ProductActions
-                  disabled={true}
-                  product={product}
-                  region={region}
-                />
-              }
-            >
-              <ProductActionsWrapper id={product.id} region={region} />
-            </Suspense>
+            <ProductActions
+              product={clientProduct}
+              region={region}
+              whatsappNumber={whatsappNumber}
+              whatsappBuyNowEnabled={whatsappBuyNowEnabled}
+            />
             {bundles && bundles.length > 0 && (
               <BundleCard bundles={bundles} />
             )}
-            <ProductTabs product={product} />
+            <ProductTabs product={clientProduct} />
           </div>
         </div>
 
@@ -531,7 +549,7 @@ const ProductTemplate = async ({
               altMap={altMap}
               altFallback={product.title || "Product image"}
               aspectRatioClass={aspectRatioClass}
-              priority={false}
+              variantImageIds={variantImageIds}
             />
           </div>
 
@@ -545,27 +563,22 @@ const ProductTemplate = async ({
                   metadata.preorder_open is set and launch_date is in
                   the future. Placed above the CTA so the countdown
                   reads naturally before the price/buttons. */}
-              <PreorderBanner metadata={product.metadata} />
+              <PreorderBanner metadata={clientProduct.metadata} />
 
               <ProductOnboardingCta />
 
-              <Suspense
-                fallback={
-                  <ProductActions
-                    disabled={true}
-                    product={product}
-                    region={region}
-                  />
-                }
-              >
-                <ProductActionsWrapper id={product.id} region={region} />
-              </Suspense>
+              <ProductActions
+                product={clientProduct}
+                region={region}
+                whatsappNumber={whatsappNumber}
+                whatsappBuyNowEnabled={whatsappBuyNowEnabled}
+              />
 
               {bundles && bundles.length > 0 && (
                 <BundleCard bundles={bundles} />
               )}
 
-              <ProductTabs product={product} />
+              <ProductTabs product={clientProduct} />
             </div>
           </div>
         </div>

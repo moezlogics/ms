@@ -61,12 +61,7 @@ type Props = {
  * slide-in drawer.
  */
 const StoreTemplate = async ({
-  sortBy,
-  page,
   countryCode,
-  minPrice,
-  maxPrice,
-  inStock,
   categoryId,
   categoryIds,
   collectionId,
@@ -76,10 +71,13 @@ const StoreTemplate = async ({
   title,
   breadcrumbs,
   children,
-  searchParams,
 }: Props) => {
-  const pageNumber = page ? parseInt(page) : 1
-  const sort = sortBy || "created_at"
+  // NOTE: sortBy/page/minPrice/maxPrice/inStock/searchParams props are
+  // intentionally ignored — the server renders the query-independent
+  // default listing (ISR/CDN cacheable) and ProductGridClient applies the
+  // URL query client-side. The filter controls below are wrapped in
+  // Suspense because they call useSearchParams (static render bails them
+  // out to the client without breaking the rest of the page).
 
   // Category product query rolls up descendants when available.
   const effectiveCategoryIds =
@@ -262,16 +260,18 @@ const StoreTemplate = async ({
           {title || "All Products"}
         </h1>
         <div className="flex items-center gap-2">
-          <MobileFilterDrawer
-            categories={categories}
-            currentCategory={currentCategoryHandle}
-            brands={brandItems}
-            activeCategoryIds={activeCategoryIds}
-            activeBrandIds={activeBrandIds}
-            resultCount={0 /* resolved client-side by ShopFilters summary bar */}
-            specFilters={specFilters}
-          />
-          <SortDropdown sortBy={sort} />
+          <Suspense fallback={null}>
+            <MobileFilterDrawer
+              categories={categories}
+              currentCategory={currentCategoryHandle}
+              brands={brandItems}
+              activeCategoryIds={activeCategoryIds}
+              activeBrandIds={activeBrandIds}
+              resultCount={0 /* resolved client-side by ShopFilters summary bar */}
+              specFilters={specFilters}
+            />
+            <SortDropdown />
+          </Suspense>
         </div>
       </div>
 
@@ -288,22 +288,18 @@ const StoreTemplate = async ({
         <div className="flex-1 min-w-0 p-3 small:p-0">
           {/* Active filter chips row */}
           <div className="mb-3 min-h-[2rem]">
-            <ActiveFilters currentCategoryName={currentCategoryName} />
+            <Suspense fallback={null}>
+              <ActiveFilters currentCategoryName={currentCategoryName} />
+            </Suspense>
           </div>
 
           <Suspense fallback={<SkeletonProductGrid />}>
             <PaginatedProducts
-              sortBy={sort}
-              page={pageNumber}
               countryCode={countryCode}
               categoryId={categoryId}
               categoryIds={effectiveCategoryIds}
               collectionId={collectionId}
               productsIds={productsIds}
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              inStock={inStock === "true"}
-              searchParams={searchParams}
             />
           </Suspense>
         </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { StoreCart, StoreCartShippingOption, StoreCustomer } from "@medusajs/types"
+import { useUserData } from "@lib/context/user-data-context"
 
 const FreeShippingPriceNudgeInner = dynamic(
   () => import("@modules/shipping/components/free-shipping-price-nudge"),
@@ -20,36 +20,37 @@ const CartMismatchBannerInner = dynamic(
   { ssr: false }
 )
 
-export function ClientFreeShippingNudge({
-  cart,
-  shippingOptions,
-}: {
-  cart: StoreCart
-  shippingOptions: StoreCartShippingOption[]
-}) {
-  return (
-    <FreeShippingPriceNudgeInner
-      variant="popup"
-      cart={cart}
-      shippingOptions={shippingOptions}
-    />
-  )
-}
-
-export function ClientCartDrawer({ cart }: { cart: StoreCart | null }) {
-  return <CartDrawerInner cart={cart} />
-}
-
 export function ClientRecentPurchasesTicker({ interval }: { interval: number }) {
   return <RecentPurchasesTickerInner interval={interval} />
 }
 
-export function ClientCartMismatchBanner({
-  customer,
-  cart,
+/**
+ * Cart/customer-dependent overlay widgets (mismatch banner, free-shipping
+ * nudge, cart drawer). Data comes from UserDataProvider (client fetch
+ * after mount) so the server render stays cookie-free and ISR-safe.
+ */
+export function ClientUserWidgets({
+  cartDrawerEnabled,
 }: {
-  customer: StoreCustomer
-  cart: StoreCart
+  cartDrawerEnabled: boolean
 }) {
-  return <CartMismatchBannerInner customer={customer} cart={cart} />
+  const { customer, cart, shippingOptions, ready } = useUserData()
+
+  if (!ready) return null
+
+  return (
+    <>
+      {customer && cart && (
+        <CartMismatchBannerInner customer={customer} cart={cart} />
+      )}
+      {cart && (
+        <FreeShippingPriceNudgeInner
+          variant="popup"
+          cart={cart}
+          shippingOptions={shippingOptions}
+        />
+      )}
+      {cartDrawerEnabled && <CartDrawerInner cart={cart} />}
+    </>
+  )
 }

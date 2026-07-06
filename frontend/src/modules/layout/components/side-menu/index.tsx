@@ -3,7 +3,8 @@
 import { Popover, PopoverPanel, Transition } from "@headlessui/react"
 import { ArrowRightMini } from "@medusajs/icons"
 import { clx, useToggleState } from "@medusajs/ui"
-import { Fragment } from "react"
+import { Fragment, useEffect, useState } from "react"
+import { useUserData } from "@lib/context/user-data-context"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import LanguageSelect from "../language-select"
@@ -41,11 +42,18 @@ const HELP: MenuLink[] = [
 type SideMenuProps = {
   regions: HttpTypes.StoreRegion[] | null
   locales: Locale[] | null
-  currentLocale: string | null
-  customer: HttpTypes.StoreCustomer | null
 }
 
-const SideMenu = ({ locales, currentLocale, customer }: SideMenuProps) => {
+const SideMenu = ({ locales }: SideMenuProps) => {
+  // Customer comes from the client-side provider (fetched after mount) so
+  // the menu can be part of the static ISR shell. The locale cookie is
+  // NOT HttpOnly, so it's readable directly from document.cookie.
+  const { customer } = useUserData()
+  const [currentLocale, setCurrentLocale] = useState<string | null>(null)
+  useEffect(() => {
+    const m = document.cookie.match(/(?:^|;\s*)_medusa_locale=([^;]+)/)
+    setCurrentLocale(m ? decodeURIComponent(m[1]) : null)
+  }, [])
 
   const languageToggleState = useToggleState()
 

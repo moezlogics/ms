@@ -82,6 +82,17 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Filtered/sorted archive URLs (?spec_*, ?sortBy, ?page …) must not be
+  // indexed — ISR pages can't read searchParams server-side, so robots
+  // handling lives here where the query string is always visible.
+  const FILTER_KEYS = new Set(["sortBy", "page", "minPrice", "maxPrice", "inStock", "upcoming"])
+  const hasFilterParams = [...request.nextUrl.searchParams.entries()].some(
+    ([key, val]) => !!val && (key.startsWith("spec_") || FILTER_KEYS.has(key))
+  )
+  if (hasFilterParams) {
+    response.headers.set("X-Robots-Tag", "noindex, follow")
+  }
+
   return response
 }
 

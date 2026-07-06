@@ -2,7 +2,8 @@
 
 import { HttpTypes } from "@medusajs/types"
 import Image from "next/image"
-import { useRef, useState, useCallback, useEffect } from "react"
+import { useRef, useState, useCallback, useEffect, useMemo } from "react"
+import { useSearchParams } from "next/navigation"
 import dynamic from "next/dynamic"
 
 // The lightbox library + its 4 plugins + CSS are a heavy JS chunk that's
@@ -40,6 +41,11 @@ type ImageGalleryProps = {
   altFallback?: string
   aspectRatioClass?: string
   priority?: boolean
+  /**
+   * variant id → image ids. When ?v_id= is present the gallery narrows
+   * client-side (ISR pages cannot read the query string server-side).
+   */
+  variantImageIds?: Record<string, string[]>
 }
 
 /**
@@ -54,7 +60,17 @@ type ImageGalleryProps = {
  *   [main image/video] (swipe-navigable with dots)
  *   [horizontal thumbnail strip]
  */
-const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass, priority = true }: ImageGalleryProps) => {
+const ImageGallery = ({
+  images,
+  videos,
+  altMap,
+  altFallback,
+  aspectRatioClass,
+  priority = true,
+  variantImageIds,
+}: ImageGalleryProps) => {
+  const searchParams = useSearchParams()
+  const vId = searchParams.get("v_id")
   const aspectClass = aspectRatioClass || "aspect-square"
   const altFor = (url: string, index: number) =>
     (altMap && altMap[url]) || altFallback || `Product image ${index + 1}`
@@ -73,7 +89,20 @@ const ImageGallery = ({ images, videos, altMap, altFallback, aspectRatioClass, p
   const videoRef = useRef<HTMLVideoElement>(null)
   const mobileScrollRef = useRef<HTMLDivElement>(null)
 
-  const safeImages = (images || []).filter((i) => !!i?.url)
+  const safeImages = useMemo(() => {
+    const all = (images || []).filter((i) => !!i?.url)
+    const vId = searchParams.get("v_id")
+    if (!vId || !variantImageIds?.[vId]?.length) return all
+    const allowed = new Set(variantImageIds[vId])
+    const narrowed = all.filter((img) => img.id && allowed.has(img.id))
+    return narrowed.length > 0 ? narrowed : all
+  }, [images, searchParams, variantImageIds])
+
+  // Reset to first slide when variant selection changes.
+  useEffect(() => {
+    setActiveIndex(0)
+  }, [vId])
+
   const safeVideos = (videos || []).filter((v) => !!v?.url)
 
   // Build unified gallery items: images first, then videos

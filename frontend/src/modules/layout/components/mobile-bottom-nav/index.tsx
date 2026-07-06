@@ -1,23 +1,18 @@
-import { retrieveCart } from "@lib/data/cart"
-import { retrieveCustomer } from "@lib/data/customer"
+"use client"
+
+import { useUserData } from "@lib/context/user-data-context"
 import MobileBottomNavClient from "./client"
 
 /**
  * Mobile-only app-style bottom tab bar.
  *
- * Server component: pre-fetches the lightweight pieces the bar needs
- * (cart line-item count, signed-in flag) so the client bundle stays
- * trim and the badge is correct on first paint — no flicker.
- *
- * Rendering / layout responsibilities live in `./client.tsx`, which
- * is the actual interactive bar with `usePathname()` highlights and
- * the animated active pill.
+ * Was a server component that read cart/auth cookies on every page render
+ * — which forced every page dynamic and broke ISR. The bar itself is
+ * static; the cart badge and signed-in highlight hydrate client-side from
+ * UserDataProvider right after mount.
  */
-export default async function MobileBottomNav() {
-  const [cart, customer] = await Promise.all([
-    retrieveCart().catch(() => null),
-    retrieveCustomer().catch(() => null),
-  ])
+export default function MobileBottomNav() {
+  const { cart, customer } = useUserData()
 
   const itemCount =
     cart?.items?.reduce((sum: number, i: any) => sum + (i?.quantity || 0), 0) ||

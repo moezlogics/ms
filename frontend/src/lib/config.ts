@@ -1,5 +1,4 @@
-import { getLocaleHeader } from "@lib/util/get-locale-header"
-import Medusa, { FetchArgs, FetchInput } from "@medusajs/js-sdk"
+import Medusa from "@medusajs/js-sdk"
 
 // Backend URL resolution — CRITICAL for archive/listing page speed.
 //
@@ -29,26 +28,11 @@ export const sdk = new Medusa({
   publishableKey: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
 })
 
-const originalFetch = sdk.client.fetch.bind(sdk.client)
-
-sdk.client.fetch = async <T>(
-  input: FetchInput,
-  init?: FetchArgs
-): Promise<T> => {
-  const headers = init?.headers ?? {}
-  let localeHeader: Record<string, string | null> | undefined
-  try {
-    localeHeader = await getLocaleHeader()
-    headers["x-medusa-locale"] ??= localeHeader["x-medusa-locale"]
-  } catch {}
-
-  const newHeaders = {
-    ...localeHeader,
-    ...headers,
-  }
-  init = {
-    ...init,
-    headers: newHeaders,
-  }
-  return originalFetch(input, init)
-}
+// NOTE: the previous global `sdk.client.fetch` override injected an
+// `x-medusa-locale` header by reading the locale COOKIE on EVERY backend
+// call. That cookie read poisoned static/ISR rendering (proven cause of
+// the DYNAMIC_SERVER_USAGE 500 when the PDP tried `revalidate`) and made
+// every client-side SDK call round-trip through a server action. Cached
+// shared pages cannot be per-cookie anyway. Locale is now passed
+// explicitly only in the user-specific flows that need it (cart
+// creation/update via `getLocale()` in cart.ts / locale-actions.ts).

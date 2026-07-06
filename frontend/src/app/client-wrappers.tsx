@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic"
 
 import { ChatWidgetErrorBoundary } from "@modules/chat-widget/error-boundary"
+import { useUserData } from "@lib/context/user-data-context"
 
 const PushPromptInner = dynamic(() => import("@modules/push/push-prompt"), { ssr: false })
 const ChatWidgetInner = dynamic(() => import("@modules/chat-widget"), { ssr: false })
@@ -13,23 +14,23 @@ export function ClientTopProgress() {
   return <TopProgressInner />
 }
 
-export function ClientPushPrompt({ customerId }: { customerId: string | null }) {
-  return <PushPromptInner customerId={customerId} />
+export function ClientPushPrompt() {
+  const { customer } = useUserData()
+  return <PushPromptInner customerId={customer?.id || null} />
 }
 
 export function ClientChatWidget({
-  customerId,
   whatsappNumber,
   whatsappChatbotEnabled,
 }: {
-  customerId: string | null
   whatsappNumber: string | null
   whatsappChatbotEnabled: boolean
 }) {
+  const { customer } = useUserData()
   return (
     <ChatWidgetErrorBoundary>
       <ChatWidgetInner
-        customerId={customerId}
+        customerId={customer?.id || null}
         whatsappNumber={whatsappNumber}
         whatsappChatbotEnabled={whatsappChatbotEnabled}
       />

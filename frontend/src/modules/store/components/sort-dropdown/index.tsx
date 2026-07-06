@@ -16,14 +16,18 @@ const OPTIONS: { value: SortOptions; label: string }[] = [
  * opening a floating menu with the options. Replaces the previous row
  * of chip buttons for a more professional, space-efficient UI.
  */
-const SortDropdown = ({ sortBy }: { sortBy: SortOptions }) => {
+const SortDropdown = ({ sortBy }: { sortBy?: SortOptions }) => {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  // Derive the active sort from the URL (ISR pages render the same HTML
+  // for every query, so the server can't know it). Prop kept as fallback.
+  const activeSort = (searchParams.get("sortBy") as SortOptions) || sortBy || "created_at"
+
   const current = useMemo(
-    () => OPTIONS.find((o) => o.value === sortBy) || OPTIONS[0],
-    [sortBy]
+    () => OPTIONS.find((o) => o.value === activeSort) || OPTIONS[0],
+    [activeSort]
   )
 
   const setSort = useCallback(
@@ -63,13 +67,13 @@ const SortDropdown = ({ sortBy }: { sortBy: SortOptions }) => {
                       close()
                     }}
                     className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-base text-sm text-left transition-colors ${
-                      opt.value === sortBy
+                      opt.value === activeSort
                         ? "bg-surface text-ink font-medium"
                         : "text-ink/80 hover:bg-surface"
                     }`}
                   >
                     {opt.label}
-                    {opt.value === sortBy && (
+                    {opt.value === activeSort && (
                       <i className="ph-bold ph-check text-[12px]" aria-hidden />
                     )}
                   </button>

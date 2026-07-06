@@ -1,14 +1,11 @@
-import { Suspense } from "react"
-
 import { listRegions } from "@lib/data/regions"
 import { listLocales } from "@lib/data/locales"
-import { getLocale } from "@lib/data/locale-actions"
 import { listCategories } from "@lib/data/categories"
-import { retrieveCustomer } from "@lib/data/customer"
 import { getSiteSettings } from "@lib/data/site-settings"
 import { StoreRegion, HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CartButton from "@modules/layout/components/cart-button"
+import NavAccountLink from "@modules/layout/components/nav-account-link"
 import SideMenu from "@modules/layout/components/side-menu"
 import SmartSearchBar from "@modules/search/components/smart-search-bar"
 
@@ -22,15 +19,16 @@ import SmartSearchBar from "@modules/search/components/smart-search-bar"
  *   [☰]      [Logo]     [🔍][🛍]
  */
 export default async function Nav() {
-  const [regions, locales, currentLocale, categories, customer, settings] =
-    await Promise.all([
-      listRegions().then((r: StoreRegion[]) => r),
-      listLocales(),
-      getLocale(),
-      listCategories().catch(() => [] as HttpTypes.StoreProductCategory[]),
-      retrieveCustomer().catch(() => null),
-      getSiteSettings(),
-    ])
+  // Cookie-free on purpose: customer state + current locale hydrate
+  // client-side (UserDataProvider / document.cookie) so this header can be
+  // part of the static ISR shell. All fetches below are tag-cached and
+  // shared across visitors.
+  const [regions, locales, categories, settings] = await Promise.all([
+    listRegions().then((r: StoreRegion[]) => r),
+    listLocales(),
+    listCategories().catch(() => [] as HttpTypes.StoreProductCategory[]),
+    getSiteSettings(),
+  ])
 
   const siteName = settings.site_name?.trim() || "Store"
   const logoUrl = settings.site_logo_url?.trim()
@@ -93,12 +91,7 @@ export default async function Nav() {
         {/* Row 1 — hamburger · logo · search · cart (64px) */}
         <div className="px-2 h-16 flex items-center gap-1">
           <div className="w-12 h-12 flex items-center justify-center shrink-0">
-            <SideMenu
-              regions={regions}
-              locales={locales}
-              currentLocale={currentLocale}
-              customer={customer}
-            />
+            <SideMenu regions={regions} locales={locales} />
           </div>
 
           <LocalizedClientLink
@@ -111,19 +104,7 @@ export default async function Nav() {
           </LocalizedClientLink>
 
           <div className="w-12 h-12 flex items-center justify-center shrink-0">
-            <Suspense
-              fallback={
-                <LocalizedClientLink
-                  href="/cart"
-                  aria-label="Cart"
-                  className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-header-hover text-header-fg hover:text-header-accent transition-all active:scale-90"
-                >
-                  <i className="ph-bold ph-handbag text-[24px]" aria-hidden />
-                </LocalizedClientLink>
-              }
-            >
-              <CartButton />
-            </Suspense>
+            <CartButton />
           </div>
         </div>
       </div>
@@ -214,37 +195,9 @@ export default async function Nav() {
                 <SmartSearchBar />
               </div>
               <span className="mx-1 h-5 w-px bg-header-line" aria-hidden />
-              <LocalizedClientLink
-                href="/account"
-                aria-label={customer ? "Account" : "Sign in"}
-                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-header-hover text-header-fg hover:text-header-accent transition-all hover:scale-[1.05] relative"
-              >
-                <i className="ph-bold ph-user text-[20px]" aria-hidden />
-                {customer && (
-                  <span
-                    className="absolute top-2 right-2 w-2 h-2 rounded-full bg-success border border-header"
-                    aria-hidden
-                  />
-                )}
-              </LocalizedClientLink>
+              <NavAccountLink />
 
-              <Suspense
-                fallback={
-                  <LocalizedClientLink
-                    href="/cart"
-                    aria-label="Cart"
-                    data-testid="nav-cart-link"
-                    className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-header-hover text-header-fg hover:text-header-accent transition-all hover:scale-[1.05]"
-                  >
-                    <i
-                      className="ph-bold ph-handbag text-[20px]"
-                      aria-hidden
-                    />
-                  </LocalizedClientLink>
-                }
-              >
-                <CartButton />
-              </Suspense>
+              <CartButton />
             </div>
           </nav>
         </div>

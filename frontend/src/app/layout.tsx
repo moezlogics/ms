@@ -11,7 +11,7 @@ import { getSiteSettings, resolveProductCardAspectClass } from "@lib/data/site-s
 import { buildTheme, getFontHref } from "@lib/util/theme"
 import { CartDrawerProvider } from "@lib/context/cart-drawer-context"
 import { SiteSettingsProvider } from "@lib/context/site-settings-context"
-import { retrieveCustomer } from "@lib/data/customer"
+import { UserDataProvider } from "@lib/context/user-data-context"
 import { ClientPushPrompt, ClientChatWidget, ClientSmoothScroll } from "./client-wrappers"
 
 // Anvogue body font, wired to the CSS variable used by tailwind.config.js
@@ -101,17 +101,10 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const settings = await getSiteSettings()
   const theme = buildTheme(settings)
   const fontHref = getFontHref(theme.fontKey)
-  // Best-effort customer lookup so push subscriptions are linked to the
-  // logged-in user. Failures are silent — push works for guests too.
-  let customerId: string | null = null
-  try {
-    const customer = await retrieveCustomer()
-    customerId = customer?.id || null
-  } catch {}
-  // NOTE: cart id is fetched lazily inside the chat widget via a server
-  // action — reading the HttpOnly cookie here would call `cookies()` and
-  // force-disqualify the root layout from static generation, breaking
-  // every page that uses `generateStaticParams` (product detail, etc.).
+  // NOTE: customer/cart are NOT read here anymore. Reading auth cookies in
+  // the root layout poisoned static/ISR rendering for EVERY route (proven
+  // DYNAMIC_SERVER_USAGE root cause). Per-user data now hydrates
+  // client-side via UserDataProvider after mount.
 
   return (
     <html
@@ -181,26 +174,28 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <CustomHeadCode html={settings.head_code} />
       </head>
       <body className="font-sans antialiased text-ink bg-bg">
-        <CartDrawerProvider>
-          <SiteSettingsProvider aspectClass={resolveProductCardAspectClass(settings)}>
-            <main className="relative">{props.children}</main>
-          </SiteSettingsProvider>
-        </CartDrawerProvider>
-        <ClientSmoothScroll />
-        {/* Web Push — registers /sw.js and triggers the native browser
-            permission prompt on first user gesture. No-op on iOS Safari
-            (push not yet supported in non-PWA contexts). */}
-        {settings.push_notifications_enabled !== "false" && (
-          <ClientPushPrompt customerId={customerId} />
-        )}
-        {/* AI Shopping Assistant — with product search, cart actions, and
-            order concierge built into the chat. Cart id is fetched lazily
-            inside the widget (see note above). */}
-        <ClientChatWidget
-          customerId={customerId}
-          whatsappNumber={settings.whatsapp_number || null}
-          whatsappChatbotEnabled={settings.whatsapp_chatbot_enabled !== "false"}
-        />
+        <UserDataProvider>
+          <CartDrawerProvider>
+            <SiteSettingsProvider aspectClass={resolveProductCardAspectClass(settings)}>
+              <main className="relative">{props.children}</main>
+            </SiteSettingsProvider>
+          </CartDrawerProvider>
+          <ClientSmoothScroll />
+          {/* Web Push — registers /sw.js and triggers the native browser
+              permission prompt on first user gesture. No-op on iOS Safari
+              (push not yet supported in non-PWA contexts). customerId is
+              resolved client-side from UserDataProvider. */}
+          {settings.push_notifications_enabled !== "false" && (
+            <ClientPushPrompt />
+          )}
+          {/* AI Shopping Assistant — with product search, cart actions, and
+              order concierge built into the chat. Cart id is fetched lazily
+              inside the widget. */}
+          <ClientChatWidget
+            whatsappNumber={settings.whatsapp_number || null}
+            whatsappChatbotEnabled={settings.whatsapp_chatbot_enabled !== "false"}
+          />
+        </UserDataProvider>
       </body>
     </html>
   )

@@ -8,16 +8,10 @@ import { listCategories, collectDescendantCategoryIds } from "@lib/data/categori
 
 export default async function CategoryTemplate({
   category,
-  sortBy,
-  page,
   countryCode,
-  searchParams,
 }: {
   category: HttpTypes.StoreProductCategory
-  sortBy?: SortOptions
-  page?: string
   countryCode: string
-  searchParams?: any
 }) {
   if (!category || !countryCode) notFound()
 
@@ -69,10 +63,7 @@ export default async function CategoryTemplate({
         currentCategoryName={category.name}
         title={category.name}
         breadcrumbs={breadcrumbs}
-        sortBy={sortBy}
-        page={page}
         countryCode={countryCode}
-        searchParams={searchParams}
       >
         {/* Subcategory icons — same clean style as homepage/store */}
         {category.category_children && category.category_children.length > 0 && (

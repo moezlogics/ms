@@ -1,10 +1,22 @@
+"use client"
+
 import { Button, Container, Text } from "@medusajs/ui"
-import { cookies as nextCookies } from "next/headers"
+import { useEffect, useState } from "react"
 
-async function ProductOnboardingCta() {
-  const cookies = await nextCookies()
+/**
+ * Medusa demo onboarding banner — only shown when the admin onboarding
+ * flow sets `_medusa_onboarding=true`. MUST stay client-side: reading
+ * cookies() in a server component poisoned ISR PDP renders with
+ * "Page changed from static to dynamic at runtime, reason: cookies".
+ */
+export default function ProductOnboardingCta() {
+  const [isOnboarding, setIsOnboarding] = useState(false)
 
-  const isOnboarding = cookies.get("_medusa_onboarding")?.value === "true"
+  useEffect(() => {
+    setIsOnboarding(
+      document.cookie.split("; ").some((c) => c === "_medusa_onboarding=true")
+    )
+  }, [])
 
   if (!isOnboarding) {
     return null
@@ -26,5 +38,3 @@ async function ProductOnboardingCta() {
     </Container>
   )
 }
-
-export default ProductOnboardingCta

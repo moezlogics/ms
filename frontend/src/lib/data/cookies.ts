@@ -73,6 +73,11 @@ const GLOBAL_REVALIDATE_TAGS = new Set([
   "banners",
   "brands",
   "blog",
+  // Nav + PDP spec sheets — were missing and called cookies() via
+  // getCacheTag during ISR, triggering "static to dynamic" 500s.
+  "locales",
+  "spec-templates",
+  "variants",
 ])
 
 /**
@@ -165,9 +170,7 @@ export const getCartId = async () => {
     const cookies = await nextCookies()
     return cookies.get("_medusa_cart_id")?.value
   } catch {
-    // Static/ISR render — cookies() throws here. No try/catch existed
-    // before, so retrieveCart() crashed every ISR page (a second 500
-    // source besides the rethrows above). Anonymous render → no cart.
+    // Static/ISR render — cookies() throws here. Anonymous render → no cart.
     return undefined
   }
 }

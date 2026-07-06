@@ -1,9 +1,6 @@
 import { Metadata } from "next"
 
-import { listCartOptions, retrieveCart } from "@lib/data/cart"
-import { retrieveCustomer } from "@lib/data/customer"
 import { getBaseURL } from "@lib/util/env"
-import { StoreCartShippingOption } from "@medusajs/types"
 import AnnouncementBarServer from "@modules/layout/components/announcement-bar/server"
 import Footer from "@modules/layout/templates/footer"
 import Nav from "@modules/layout/templates/nav"
@@ -12,10 +9,8 @@ import { getSiteSettings } from "@lib/data/site-settings"
 import { CompareProvider } from "@modules/products/components/compare/context"
 import CompareTray from "@modules/products/components/compare/compare-tray"
 import {
-  ClientFreeShippingNudge,
-  ClientCartDrawer,
   ClientRecentPurchasesTicker,
-  ClientCartMismatchBanner,
+  ClientUserWidgets,
 } from "./client-wrappers"
 
 export const metadata: Metadata = {
@@ -23,18 +18,10 @@ export const metadata: Metadata = {
 }
 
 export default async function PageLayout(props: { children: React.ReactNode }) {
-  const [customer, cart, settings] = await Promise.all([
-    retrieveCustomer(),
-    retrieveCart(),
-    getSiteSettings(),
-  ])
-
-  let shippingOptions: StoreCartShippingOption[] = []
-
-  if (cart) {
-    const { shipping_options } = await listCartOptions()
-    shippingOptions = shipping_options
-  }
+  // IMPORTANT: no cookies() in this layout — customer/cart hydrate
+  // client-side via UserDataProvider (see ClientUserWidgets). Reading them
+  // here was the proven cause of the DYNAMIC_SERVER_USAGE 500 under ISR.
+  const settings = await getSiteSettings()
 
   const cartDrawerEnabled = settings.cart_drawer_enabled === "true"
   const tickerEnabled = settings.recent_purchases_ticker_enabled === "true"
@@ -44,22 +31,13 @@ export default async function PageLayout(props: { children: React.ReactNode }) {
     <CompareProvider>
       <AnnouncementBarServer />
       <Nav />
-      {customer && cart && (
-        <ClientCartMismatchBanner customer={customer} cart={cart} />
-      )}
-
-      {cart && (
-        <ClientFreeShippingNudge
-          cart={cart}
-          shippingOptions={shippingOptions}
-        />
-      )}
       {props.children}
       <Footer />
       <MobileBottomNav />
 
-      {/* Cart drawer — admin toggleable */}
-      {cartDrawerEnabled && <ClientCartDrawer cart={cart} />}
+      {/* Cart mismatch banner + free-shipping nudge + cart drawer —
+          per-user, hydrated client-side after mount */}
+      <ClientUserWidgets cartDrawerEnabled={cartDrawerEnabled} />
 
       {/* Recent purchases social proof ticker */}
       {tickerEnabled && <ClientRecentPurchasesTicker interval={tickerInterval} />}

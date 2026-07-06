@@ -21,25 +21,21 @@ import BreadcrumbJsonLd from "@modules/common/components/breadcrumb-jsonld"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
-// NOTE: stays force-dynamic. We tried `revalidate=60` (ISR, like
-// foodiespakistan) but THIS template reads auth cookies + uses
-// `cache:"no-store"` AND the page exports generateStaticParams — that
-// combo throws DYNAMIC_SERVER_USAGE and 500s the route without the
-// force-dynamic opt-in. Enabling ISR here requires first moving auth to
-// the client (a separate, careful refactor). Instant-nav feel comes from
-// loading.tsx (instant skeleton) + CF caching + staleTimes instead.
-export const dynamic = "force-dynamic"
+// ISR: the shared page shell (product / category / brand) is rendered once
+// per path and cached for 5 minutes; the backend revalidation subscriber
+// purges tags on admin changes for near-instant freshness.
+//
+// The three previously-proven ISR blockers are all gone:
+//  1. no cookies() anywhere in this render tree (layouts + SDK wrapper are
+//     cookie-free; per-user UI hydrates client-side via UserDataProvider)
+//  2. searchParams is NEVER awaited on the server — v_id gallery selection
+//     and archive filters/sort/pagination are applied client-side
+//  3. no `cache: "no-store"` fetch in this tree
+export const revalidate = 300
 type Props = {
   params: Promise<{ slug: string[]; countryCode: string }>
-  searchParams: Promise<{
-    v_id?: string
-    sortBy?: SortOptions
-    page?: string
-    minPrice?: string
-    maxPrice?: string
-    inStock?: string
-    [key: string]: any
-  }>
+  // NOTE: searchParams intentionally NOT declared/read — awaiting it marks
+  // the route dynamic and 500s ISR (proven via runtime logs, session 90b8a9).
 }
 
 /**
@@ -64,14 +60,13 @@ export async function generateStaticParams() {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
-  const searchParams = await props.searchParams
   const { slug: segments, countryCode } = params
   if (!segments || segments.length === 0) notFound()
   const lastSegment = segments[segments.length - 1]
 
-  const hasFilterParams = Object.entries(searchParams || {}).some(
-    ([key, val]) => (key.startsWith("spec_") || ["minPrice", "maxPrice", "inStock", "sortBy", "page"].includes(key)) && val
-  )
+  // Filtered/sorted URLs (?spec_*, ?sortBy, ?page …) are noindexed via an
+  // X-Robots-Tag header in middleware — query strings are invisible to an
+  // ISR render, so robots handling cannot live here anymore.
 
   // 1. Try Product Match
   const product = await listProducts({
@@ -220,13 +215,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
         ...(brand.logo_url ? { images: [brand.logo_url] } : {}),
       },
       alternates: { canonical: url },
-      robots: hasFilterParams
-        ? { index: false, follow: true }
-        : {
-            index: true,
-            follow: true,
-            googleBot: { index: true, follow: true, "max-image-preview": "large" },
-          },
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: { index: true, follow: true, "max-image-preview": "large" },
+      },
     }
   }
 
@@ -263,13 +256,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       alternates: {
         canonical,
       },
-      robots: hasFilterParams
-        ? { index: false, follow: true }
-        : {
-            index: true,
-            follow: true,
-            googleBot: { index: true, follow: true, "max-image-preview": "large" },
-          },
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: { index: true, follow: true, "max-image-preview": "large" },
+      },
     }
   } catch (error) {
     notFound()
@@ -277,10 +268,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function SlugPage(props: Props) {
-  const searchParams = await props.searchParams
   const params = await props.params
   const { slug: segments, countryCode } = params
-  const { sortBy, page, minPrice, maxPrice, inStock } = searchParams
 
   if (!segments || segments.length === 0) notFound()
   const lastSegment = segments[segments.length - 1]
@@ -305,7 +294,9 @@ export default async function SlugPage(props: Props) {
     ])
     if (!region) notFound()
 
-    const images = getImagesForVariant(pricedProduct, searchParams.v_id)
+    // All product images render server-side; the ?v_id variant selection
+    // narrows the gallery CLIENT-side (an ISR page can't see the query).
+    const images = pricedProduct.images ?? []
     const primaryCategory = pricedProduct.categories?.[0]
 
     const categoryChain = buildCategoryChain(primaryCategory)
@@ -387,13 +378,7 @@ export default async function SlugPage(props: Props) {
           title={brand.name}
           breadcrumbs={breadcrumbs}
           productsIds={product_ids}
-          sortBy={sortBy}
-          page={page}
           countryCode={countryCode}
-          minPrice={minPrice}
-          maxPrice={maxPrice}
-          inStock={inStock}
-          searchParams={searchParams}
         >
           {(brand.logo_url || brand.description || brand.website_url) && (
             <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6 p-4 md:p-5 rounded-xl border border-line bg-surface/60">
@@ -492,10 +477,7 @@ export default async function SlugPage(props: Props) {
         />
         <CategoryTemplate
           category={productCategory}
-          sortBy={sortBy}
-          page={page}
           countryCode={countryCode}
-          searchParams={searchParams}
         />
       </>
     )
