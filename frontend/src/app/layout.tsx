@@ -71,9 +71,10 @@ export async function generateMetadata(): Promise<Metadata> {
     type: "website",
     locale: "en_PK",
     alternateLocale: ["ur_PK"],
-    ...(settings.seo_default_og_image?.trim()
-      ? { images: [{ url: settings.seo_default_og_image }] }
-      : {}),
+    // Do NOT set a default og:image here — Next preloads the first
+    // og:image in <head>, which was the site LOGO on every PDP and
+    // stole bandwidth from the product LCP image. Homepage sets its
+    // own og:image in (main)/page.tsx generateMetadata.
   }
 
   return meta

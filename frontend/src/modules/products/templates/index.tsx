@@ -1,6 +1,7 @@
 import React, { Suspense } from "react"
 
-import ImageGallery from "@modules/products/components/image-gallery"
+import ImageGalleryBridge from "@modules/products/components/image-gallery/gallery-bridge"
+import ProductLcpImage from "@modules/products/components/product-lcp-image"
 import ProductActions from "@modules/products/components/product-actions"
 import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
 import ProductTabs from "@modules/products/components/product-tabs"
@@ -182,6 +183,46 @@ const ProductTemplate = async ({
   const whatsappNumber = (settings as any).whatsapp_number?.trim() || undefined
   const whatsappBuyNowEnabled =
     (settings as any).whatsapp_buy_now_enabled !== "false"
+
+  const galleryVideos = parseProductVideos((product.metadata as any)?.videos)
+  const galleryAltFallback = product.title || "Product image"
+  const lcpImageUrl =
+    (images || []).find((i) => !!i?.url)?.url || product.thumbnail || null
+  const lcpImageAlt =
+    (lcpImageUrl && altMap?.[lcpImageUrl]) || galleryAltFallback
+
+  const galleryFallback = lcpImageUrl ? (
+    <ProductLcpImage
+      src={lcpImageUrl}
+      alt={lcpImageAlt}
+      aspectRatioClass={aspectRatioClass}
+    />
+  ) : (
+    <div
+      className={`${aspectRatioClass} w-full bg-surface rounded-[var(--radius-card)]`}
+      aria-hidden
+    />
+  )
+
+  const galleryNode = (
+    <Suspense fallback={galleryFallback}>
+      <ImageGalleryBridge
+        images={images}
+        videos={galleryVideos}
+        altMap={altMap}
+        altFallback={galleryAltFallback}
+        aspectRatioClass={aspectRatioClass}
+        variantImageIds={variantImageIds}
+      />
+    </Suspense>
+  )
+
+  const actionsFallback = (
+    <div className="flex flex-col gap-3 animate-pulse" aria-hidden>
+      <div className="h-7 w-28 bg-surface rounded-md" />
+      <div className="h-12 w-full bg-surface rounded-full" />
+    </div>
+  )
 
   let allProducts: any[] = allProductsResult.response.products || []
 
@@ -473,6 +514,9 @@ const ProductTemplate = async ({
 
   return (
     <>
+      {lcpImageUrl && (
+        <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" />
+      )}
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
@@ -507,14 +551,7 @@ const ProductTemplate = async ({
           {/* 50/50 Side-by-Side Gallery & Specs */}
           <div className="grid grid-cols-2 gap-1.5 mb-2 items-start">
             <div className="min-w-0">
-              <ImageGallery
-                images={images}
-                videos={parseProductVideos((product.metadata as any)?.videos)}
-                altMap={altMap}
-                altFallback={product.title || "Product image"}
-                aspectRatioClass={aspectRatioClass}
-                variantImageIds={variantImageIds}
-              />
+              {galleryNode}
               <ProductInfo product={product} mode="brand-only" />
             </div>
             <div className="min-w-0 flex flex-col gap-2">
@@ -526,12 +563,14 @@ const ProductTemplate = async ({
           <div className="flex flex-col gap-3.5 mb-6">
             <PreorderBanner metadata={clientProduct.metadata} />
             <ProductOnboardingCta />
-            <ProductActions
-              product={clientProduct}
-              region={region}
-              whatsappNumber={whatsappNumber}
-              whatsappBuyNowEnabled={whatsappBuyNowEnabled}
-            />
+            <Suspense fallback={actionsFallback}>
+              <ProductActions
+                product={clientProduct}
+                region={region}
+                whatsappNumber={whatsappNumber}
+                whatsappBuyNowEnabled={whatsappBuyNowEnabled}
+              />
+            </Suspense>
             {bundles && bundles.length > 0 && (
               <BundleCard bundles={bundles} />
             )}
@@ -543,14 +582,7 @@ const ProductTemplate = async ({
         <div className="hidden lg:grid lg:grid-cols-[1.15fr_1fr] gap-3 lg:gap-4">
           {/* Gallery — left column */}
           <div className="w-full">
-            <ImageGallery
-              images={images}
-              videos={parseProductVideos((product.metadata as any)?.videos)}
-              altMap={altMap}
-              altFallback={product.title || "Product image"}
-              aspectRatioClass={aspectRatioClass}
-              variantImageIds={variantImageIds}
-            />
+            {galleryNode}
           </div>
 
           {/* Info / actions — right column */}
@@ -567,12 +599,14 @@ const ProductTemplate = async ({
 
               <ProductOnboardingCta />
 
-              <ProductActions
-                product={clientProduct}
-                region={region}
-                whatsappNumber={whatsappNumber}
-                whatsappBuyNowEnabled={whatsappBuyNowEnabled}
-              />
+              <Suspense fallback={actionsFallback}>
+                <ProductActions
+                  product={clientProduct}
+                  region={region}
+                  whatsappNumber={whatsappNumber}
+                  whatsappBuyNowEnabled={whatsappBuyNowEnabled}
+                />
+              </Suspense>
 
               {bundles && bundles.length > 0 && (
                 <BundleCard bundles={bundles} />

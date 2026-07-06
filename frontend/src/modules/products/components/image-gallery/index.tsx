@@ -3,7 +3,6 @@
 import { HttpTypes } from "@medusajs/types"
 import Image from "next/image"
 import { useRef, useState, useCallback, useEffect, useMemo } from "react"
-import { useSearchParams } from "next/navigation"
 import dynamic from "next/dynamic"
 
 // The lightbox library + its 4 plugins + CSS are a heavy JS chunk that's
@@ -27,7 +26,7 @@ type GalleryItem = {
   poster?: string
 }
 
-type ImageGalleryProps = {
+export type ImageGalleryProps = {
   images: HttpTypes.StoreProductImage[]
   /** Video URLs from product.metadata.videos */
   videos?: VideoItem[]
@@ -46,6 +45,8 @@ type ImageGalleryProps = {
    * client-side (ISR pages cannot read the query string server-side).
    */
   variantImageIds?: Record<string, string[]>
+  /** Variant id from ?v_id= — supplied by ImageGalleryBridge. */
+  variantId?: string | null
 }
 
 /**
@@ -68,9 +69,9 @@ const ImageGallery = ({
   aspectRatioClass,
   priority = true,
   variantImageIds,
+  variantId = null,
 }: ImageGalleryProps) => {
-  const searchParams = useSearchParams()
-  const vId = searchParams.get("v_id")
+  const vId = variantId
   const aspectClass = aspectRatioClass || "aspect-square"
   const altFor = (url: string, index: number) =>
     (altMap && altMap[url]) || altFallback || `Product image ${index + 1}`
@@ -91,12 +92,11 @@ const ImageGallery = ({
 
   const safeImages = useMemo(() => {
     const all = (images || []).filter((i) => !!i?.url)
-    const vId = searchParams.get("v_id")
     if (!vId || !variantImageIds?.[vId]?.length) return all
     const allowed = new Set(variantImageIds[vId])
     const narrowed = all.filter((img) => img.id && allowed.has(img.id))
     return narrowed.length > 0 ? narrowed : all
-  }, [images, searchParams, variantImageIds])
+  }, [images, vId, variantImageIds])
 
   // Reset to first slide when variant selection changes.
   useEffect(() => {
