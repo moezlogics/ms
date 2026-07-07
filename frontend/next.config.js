@@ -238,6 +238,19 @@ const nextConfig = {
         destination: "/:country",
         permanent: true,
       },
+      // ── Legacy /app/* URLs ──────────────────────────────────────────
+      // Old app-store/mobile-games URLs (1000+ paths like
+      //   /app/apps-categories/mobile-games/...
+      //   /app/searchapps.php?searchterm=...
+      // ) that 404 and hurt crawl budget. A single wildcard rule with
+      // `permanent: true` (HTTP 301) covers ALL sub-paths in one shot so
+      // Google drops them from the index and redistributes PageRank to the
+      // homepage. No query-string passthrough needed — destination is always /.
+      {
+        source: "/app/:path*",
+        destination: "/",
+        permanent: true,
+      },
     ]
   },
 }
