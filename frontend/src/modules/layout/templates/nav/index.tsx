@@ -8,6 +8,7 @@ import CartButton from "@modules/layout/components/cart-button"
 import NavAccountLink from "@modules/layout/components/nav-account-link"
 import SideMenu from "@modules/layout/components/side-menu"
 import LazySearchBar from "@modules/search/components/smart-search-bar/lazy-search-bar"
+import NextImage from "next/image"
 
 /**
  * Clean, solid-white header — no transparency, no category bar.
@@ -41,17 +42,20 @@ export default async function Nav() {
   const logoWidthDesktop = settings.site_logo_width_desktop ? parseInt(settings.site_logo_width_desktop, 10) : null
   const logoWidthMobile = settings.site_logo_width_mobile ? parseInt(settings.site_logo_width_mobile, 10) : null
 
-  const Logo = ({ size = "md", isMobile = false }: { size?: "sm" | "md" | "lg"; isMobile?: boolean }) => {
-    const customWidth = isMobile ? logoWidthMobile : logoWidthDesktop
-    const h =
-      size === "sm" ? "h-9" : size === "lg" ? "h-9 md:h-10" : "h-7 md:h-8"
+  const Logo = ({ size = "md", isMobile = false, priority = false }: { size?: "sm" | "md" | "lg"; isMobile?: boolean; priority?: boolean }) => {
+    const customWidth = isMobile ? (logoWidthMobile || 200) : (logoWidthDesktop || 250)
+    const h = size === "sm" ? 36 : size === "lg" ? 40 : 32
+
     return logoUrl ? (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
+      <NextImage
         src={logoUrl}
         alt={siteName}
-        className={customWidth ? "object-contain" : `${h} w-auto object-contain`}
-        style={customWidth ? { width: `${customWidth}px`, height: "auto" } : undefined}
+        width={customWidth}
+        height={h}
+        className="object-contain w-auto"
+        sizes={isMobile ? "200px" : "300px"}
+        priority={priority}
+        style={{ height: `${h}px`, width: "auto", maxWidth: `${customWidth}px` }}
       />
     ) : (
       <span
@@ -100,7 +104,7 @@ export default async function Nav() {
             className="flex-1 flex items-center justify-center min-w-0 text-header-fg"
             data-testid="nav-store-link-mobile"
           >
-            <Logo size="sm" isMobile />
+            <Logo size="sm" isMobile priority />
           </LocalizedClientLink>
 
           <div className="w-12 h-12 flex items-center justify-center shrink-0">
@@ -123,7 +127,7 @@ export default async function Nav() {
               data-testid="nav-store-link"
               aria-label={siteName}
             >
-              <Logo size="md" />
+              <Logo size="md" priority />
             </LocalizedClientLink>
 
             {/* Center: primary nav with sweep-underline hover */}

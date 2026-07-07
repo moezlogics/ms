@@ -20,12 +20,17 @@ export default function MobileBottomNav() {
 
   useEffect(() => {
     const checkPdp = () => {
-      setIsPdp(document.body.classList.contains("is-pdp-page"))
+      const hasAttr = document.body.getAttribute("data-page-type") === "pdp"
+      const hasClass = document.body.classList.contains("is-pdp-page")
+      setIsPdp(hasAttr || hasClass)
     }
     checkPdp()
 
     const observer = new MutationObserver(checkPdp)
-    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] })
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class", "data-page-type"],
+    })
     return () => observer.disconnect()
   }, [pathname])
 
