@@ -6,7 +6,7 @@ import { notifyCartUpdated } from "@lib/context/user-data-context"
 
 import { HttpTypes } from "@medusajs/types"
 import { isEqual } from "lodash"
-import { useParams, usePathname } from "next/navigation"
+import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 
@@ -51,7 +51,16 @@ export default function ProductActions({
   const router = useRouter()
   const pathname = usePathname()
 
-  const [options, setOptions] = useState<Record<string, string | undefined>>({})
+  const searchParams = useSearchParams()
+  const vId = searchParams.get("v_id")
+
+  const [options, setOptions] = useState<Record<string, string | undefined>>(() => {
+    const variants = product.variants ?? []
+    if (variants.length === 0) return {}
+
+    const first = variants[0]
+    return optionsAsKeymap(first.options) ?? {}
+  })
   const [qty, setQty] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
   const [isBuyingNow, setIsBuyingNow] = useState(false)
@@ -65,14 +74,6 @@ export default function ProductActions({
       document.body.classList.remove("is-pdp-page")
     }
   }, [])
-
-  // Preselect if there is only one variant
-  useEffect(() => {
-    if (product.variants?.length === 1) {
-      const variantOptions = optionsAsKeymap(product.variants[0].options)
-      setOptions(variantOptions ?? {})
-    }
-  }, [product.variants])
 
   const selectedVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) {
@@ -95,29 +96,68 @@ export default function ProductActions({
     })
   }, [product.variants, options])
 
-  // Keep selected variant synced to the URL so refresh / share preserves it.
+  // ── Sync options ↔ URL ?v_id= (flicker-free custom events) ─────────────
   //
-  // Skip products with a single variant — there's nothing to choose, and
-  // pushing ?v_id=... onto every PDP just pollutes the URL bar (and any
-  // share / copy-link the user does) without benefit. Multi-variant
-  // products still get the round-trip so refresh keeps the user's choice.
+  // Both mobile and desktop layout ProductActions instances and the ImageGallery
+  // sync their options and images using custom window events. This avoids calling Next.js
+  // router.replace() or modifying Next.js history state, which triggers a server re-render
+  // and makes the variant URL params or strings flash/disappear.
+  //
+  // Phase 1 — url → options: run once on initial mount
   useEffect(() => {
-    const totalVariants = product.variants?.length ?? 0
-    if (totalVariants <= 1) return
+    const params = new URLSearchParams(window.location.search)
+    const urlVId = params.get("v_id")
 
-    const params = new URLSearchParams(
-      typeof window !== "undefined" ? window.location.search : ""
-    )
-    const value = isValidVariant ? selectedVariant?.id : null
+    if (!urlVId) {
+      if (selectedVariant?.id && (product.variants?.length ?? 0) > 1) {
+        params.set("v_id", selectedVariant.id)
+        const qs = params.toString()
+        window.history.replaceState(null, "", `${pathname}?${qs}`)
+        window.dispatchEvent(new CustomEvent("variant-change", { detail: selectedVariant.id }))
+      }
+      return
+    }
 
-    if (params.get("v_id") === value) return
+    const target = product.variants?.find((v) => v.id === urlVId)
+    if (!target) return
+    const targetOpts = optionsAsKeymap(target.options) ?? {}
+    if (!isEqual(options, targetOpts)) {
+      setOptions(targetOpts)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-    if (value) params.set("v_id", value)
-    else params.delete("v_id")
+  // Phase 2 — listen for external variant-change events to stay in sync
+  useEffect(() => {
+    const handleVariantChange = (e: Event) => {
+      const customEvent = e as CustomEvent<string>
+      const targetId = customEvent.detail
+      if (!targetId || targetId === selectedVariant?.id) return
 
+      const target = product.variants?.find((v) => v.id === targetId)
+      if (!target) return
+      const targetOpts = optionsAsKeymap(target.options) ?? {}
+      if (!isEqual(options, targetOpts)) {
+        setOptions(targetOpts)
+      }
+    }
+    window.addEventListener("variant-change", handleVariantChange)
+    return () => window.removeEventListener("variant-change", handleVariantChange)
+  }, [selectedVariant, options, product.variants])
+
+  // Phase 3 — options → url: dispatch event & update URL on user selection
+  useEffect(() => {
+    if ((product.variants?.length ?? 0) <= 1) return
+    if (!selectedVariant?.id) return
+
+    const params = new URLSearchParams(window.location.search)
+    if (params.get("v_id") === selectedVariant.id) return
+
+    params.set("v_id", selectedVariant.id)
     const qs = params.toString()
-    router.replace(qs ? `${pathname}?${qs}` : pathname)
-  }, [selectedVariant, isValidVariant, pathname, product.variants, router])
+    window.history.replaceState(null, "", `${pathname}?${qs}`)
+    window.dispatchEvent(new CustomEvent("variant-change", { detail: selectedVariant.id }))
+  }, [selectedVariant, pathname, product.variants])
 
   const inStock = useMemo(() => {
     if (selectedVariant && !selectedVariant.manage_inventory) return true
@@ -271,15 +311,11 @@ export default function ProductActions({
   }
 
   // ── Selling toggle (admin: product.metadata.for_sale) ──────────────
-  // When OFF (the DEFAULT — unset products are not sellable online), the
-  // product still shows fully (price, variants, specs, stock) but every
-  // PURCHASE control is hidden: quantity stepper, Buy Now, Add to Cart,
-  // WhatsApp-order, and the mobile sticky bar's add button. The product
-  // is otherwise a complete, indexable PDP. Admin flips it ON per product
-  // in the "Selling" widget. Variants are never touched.
+  // Enabled by default (unset / null / undefined / true). Only disabled when
+  // explicitly configured as false / "false" in metadata.
   const forSale =
-    (product.metadata as any)?.for_sale === true ||
-    (product.metadata as any)?.for_sale === "true"
+    (product.metadata as any)?.for_sale !== false &&
+    (product.metadata as any)?.for_sale !== "false"
   // Compare defaults ON (only an explicit `false` hides it).
   const comparable = (product.metadata as any)?.comparable !== false
 
