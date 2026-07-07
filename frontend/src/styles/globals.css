@@ -780,8 +780,8 @@ label {
 /* Hide mobile bottom navigation bar on product pages */
 body.is-pdp-page nav[role="navigation"],
 body[data-page-type="pdp"] nav[role="navigation"],
-body.is-pdp-page div.small\:hidden.h-\[var\(--mobile-tabbar-h\,44px\)\],
-body[data-page-type="pdp"] div.small\:hidden.h-\[var\(--mobile-tabbar-h\,44px\)\] {
+body.is-pdp-page .mobile-bottom-nav-spacer,
+body[data-page-type="pdp"] .mobile-bottom-nav-spacer {
   display: none !important;
 }
 

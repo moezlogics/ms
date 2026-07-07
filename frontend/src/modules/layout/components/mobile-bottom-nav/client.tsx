@@ -177,7 +177,7 @@ export default function MobileBottomNavClient({
           UIKit's 49pt and Material's 56dp for a more app-like feel. */}
       <div
         aria-hidden
-        className="block small:hidden h-[var(--mobile-tabbar-h,44px)]"
+        className="block small:hidden h-[var(--mobile-tabbar-h,44px)] mobile-bottom-nav-spacer"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       />
 
