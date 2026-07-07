@@ -313,10 +313,16 @@
     logSearchToBackend(query)
   }
 
-  export default function SmartSearchBar() {
+  export default function SmartSearchBar({
+    initialMobileOpen = false,
+    initialDesktopOpen = false,
+  }: {
+    initialMobileOpen?: boolean
+    initialDesktopOpen?: boolean
+  }) {
     const { aspectClass: globalAspectClass } = useSiteSettings()
-    const [isOpen, setIsOpen] = useState(false)
-    const [isMobileOpen, setIsMobileOpen] = useState(false)
+    const [isOpen, setIsOpen] = useState(initialDesktopOpen)
+    const [isMobileOpen, setIsMobileOpen] = useState(initialMobileOpen)
     const [query, setQuery] = useState("")
     const [productsList, setProductsList] = useState<SearchItem[]>([])
     const [filteredHits, setFilteredHits] = useState<SearchItem[]>([])
@@ -334,7 +340,21 @@
       setMounted(true)
       setRecentSearches(getRecentSearches())
       fetchTrendingSearches().then((q) => setTrending(q))
-    }, [])
+
+      if (initialDesktopOpen) {
+        startLoadingProducts()
+        setTimeout(() => {
+          desktopInputRef.current?.focus()
+        }, 50)
+      }
+      if (initialMobileOpen) {
+        startLoadingProducts()
+        setTimeout(() => {
+          mobileInputRef.current?.focus()
+        }, 50)
+      }
+    }, [initialDesktopOpen, initialMobileOpen])
+
 
     const startLoadingProducts = () => {
       if (cachedProducts) {

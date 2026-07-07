@@ -21,9 +21,17 @@ import { getProductPrice } from "@lib/util/get-product-price"
 import { getProductPath } from "@lib/util/product"
 import { canonicalUrl } from "@lib/util/seo-url"
 
-import FrequentlyBoughtTogether from "@modules/products/components/frequently-bought-together"
+import dynamic from "next/dynamic"
+
+const FrequentlyBoughtTogether = dynamic(
+  () => import("@modules/products/components/frequently-bought-together"),
+  { ssr: false }
+)
 import { slimProductForClient } from "@lib/util/slim-product"
-import ProductReviews from "@modules/products/components/product-reviews"
+const ProductReviews = dynamic(
+  () => import("@modules/products/components/product-reviews"),
+  { ssr: false }
+)
 import ProductDescriptionTabs from "@modules/products/components/product-description-tabs"
 import ProductViewTracker from "@modules/analytics/product-view-tracker"
 import BundleCard from "@modules/products/components/bundle-card"

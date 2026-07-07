@@ -21,6 +21,7 @@ export default function ProductViewTracker({
   currency?: string
 }) {
   useEffect(() => {
+    document.body.setAttribute("data-page-type", "pdp")
     trackViewItem({
       id: productId,
       title: productTitle,
@@ -28,6 +29,9 @@ export default function ProductViewTracker({
       price,
       currency,
     })
+    return () => {
+      document.body.removeAttribute("data-page-type")
+    }
   }, [productId, productTitle, category, price, currency])
 
   return null

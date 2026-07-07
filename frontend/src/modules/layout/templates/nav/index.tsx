@@ -7,7 +7,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import CartButton from "@modules/layout/components/cart-button"
 import NavAccountLink from "@modules/layout/components/nav-account-link"
 import SideMenu from "@modules/layout/components/side-menu"
-import SmartSearchBar from "@modules/search/components/smart-search-bar"
+import LazySearchBar from "@modules/search/components/smart-search-bar/lazy-search-bar"
 
 /**
  * Clean, solid-white header — no transparency, no category bar.
@@ -192,7 +192,7 @@ export default async function Nav() {
             {/* Right: search + actions */}
             <div className="flex items-center gap-1.5 shrink-0">
               <div className="hidden medium:block w-[340px] lg:w-[400px]">
-                <SmartSearchBar />
+                <LazySearchBar />
               </div>
               <span className="mx-1 h-5 w-px bg-header-line" aria-hidden />
               <NavAccountLink />

@@ -165,14 +165,16 @@ export default function ChatWidget({
   customerId,
   whatsappNumber,
   whatsappChatbotEnabled = true,
+  initialOpen = false,
 }: {
   customerId?: string | null
   whatsappNumber?: string | null
   whatsappChatbotEnabled?: boolean
+  initialOpen?: boolean
 }) {
   const { aspectClass: globalAspectClass } = useSiteSettings()
   const [cartId, setCartId] = useState<string | null>(null)
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(initialOpen)
   const [isSending, setIsSending] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
