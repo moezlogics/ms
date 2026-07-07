@@ -8,18 +8,24 @@ import "leaflet/dist/leaflet.css"
 /**
  * Fix the broken default-marker icon in Leaflet + Webpack/Next: by default
  * Leaflet tries to derive `iconUrl` from its own script path which breaks
- * under bundlers. We replace it with CDN-hosted icons from unpkg.
+ * under bundlers.
+ *
+ * Icons are now self-hosted in /public/leaflet-images/ (copied from
+ * node_modules/leaflet/dist/images at build time) so there is no third-party
+ * DNS lookup on the checkout page. The unpkg.com URLs that were here before
+ * triggered a PageSpeed "Reduce the impact of third-party code" warning on
+ * every checkout render.
  */
 if (typeof window !== "undefined") {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   delete (L.Icon.Default.prototype as any)._getIconUrl
   L.Icon.Default.mergeOptions({
-    iconRetinaUrl:
-      "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    iconRetinaUrl: "/leaflet-images/marker-icon-2x.png",
+    iconUrl: "/leaflet-images/marker-icon.png",
+    shadowUrl: "/leaflet-images/marker-shadow.png",
   })
 }
+
 
 export type ResolvedAddress = {
   lat: number

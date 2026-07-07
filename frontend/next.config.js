@@ -49,6 +49,7 @@ const nextConfig = {
       "@headlessui/react",
       "react-country-flag",
       "yet-another-react-lightbox",
+      "lenis",
     ],
   },
   logging: {
@@ -173,6 +174,19 @@ const nextConfig = {
           },
         ],
       },
+      {
+        // Leaflet marker icons — static assets, never change (pinned to
+        // leaflet@1.9.4 in package.json). Long cache avoids re-downloading
+        // the 3 small PNGs on every checkout session.
+        source: "/leaflet-images/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+
       {
         source: "/:path*",
         headers: [

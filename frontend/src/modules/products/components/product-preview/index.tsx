@@ -27,6 +27,7 @@ export default async function ProductPreview({
   aspectClass,
   region,
   priority,
+  sizes,
 }: {
   product: HttpTypes.StoreProduct
   isFeatured?: boolean
@@ -34,6 +35,8 @@ export default async function ProductPreview({
   region: HttpTypes.StoreRegion
   /** Eager-load this card's image (first above-the-fold cards only). */
   priority?: boolean
+  /** Responsive sizes hint — see ProductCardProps.sizes for details. */
+  sizes?: string
 }) {
   const [{ cheapestPrice }, settings] = await Promise.all([
     Promise.resolve(getProductPrice({ product })),
@@ -91,6 +94,7 @@ export default async function ProductPreview({
     secondaryAlt,
     productPath,
     priority,
+    sizes,
   }
 
   return (

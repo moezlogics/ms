@@ -28,6 +28,13 @@ type ThumbnailProps = {
    * immediately instead of waiting for layout.
    */
   priority?: boolean
+  /**
+   * Responsive sizes hint — passed through to <Image sizes={...}>.
+   * Callers that know their layout context can provide a more accurate
+   * value so the browser picks the cheapest image to download.
+   * Default: `(max-width: 576px) 50vw, (max-width: 992px) 33vw, 25vw`
+   */
+  sizes?: string
   "data-testid"?: string
 }
 
@@ -47,6 +54,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
   className,
   alt,
   priority,
+  sizes,
   "data-testid": dataTestid,
 }) => {
   const initialImage = thumbnail || images?.[0]?.url
@@ -76,7 +84,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
       )}
       data-testid={dataTestid}
     >
-      <ImageOrPlaceholder image={initialImage} size={size} alt={alt} priority={priority} />
+      <ImageOrPlaceholder image={initialImage} size={size} alt={alt} priority={priority} sizes={sizes} />
     </div>
   )
 }
@@ -86,7 +94,8 @@ const ImageOrPlaceholder = ({
   size,
   alt,
   priority,
-}: Pick<ThumbnailProps, "size" | "alt" | "priority"> & { image?: string }) => {
+  sizes,
+}: Pick<ThumbnailProps, "size" | "alt" | "priority" | "sizes"> & { image?: string }) => {
   return image ? (
     <Image
       src={image}
@@ -94,7 +103,7 @@ const ImageOrPlaceholder = ({
       className="absolute inset-0 object-cover object-center transition-transform duration-700 group-hover:scale-105"
       draggable={false}
       quality={75}
-      sizes="(max-width: 576px) 50vw, (max-width: 992px) 33vw, 25vw"
+      sizes={sizes || "(max-width: 576px) 50vw, (max-width: 992px) 33vw, 25vw"}
       fill
       {...(priority ? { priority: true } : {})}
     />

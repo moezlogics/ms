@@ -37,7 +37,22 @@ export type ProductCardProps = {
    * flagged the first product image as a lazy LCP with a 1.4s load delay.
    */
   priority?: boolean
+  /**
+   * Responsive `sizes` hint for the card's main `<Image>`. Callers that
+   * know the grid layout can pass a more accurate string so the browser
+   * downloads the cheapest-possible image variant.
+   *
+   * Default (when omitted): `(max-width: 576px) 50vw, (max-width: 992px) 33vw, 25vw`
+   *
+   * Homepage rail with sidebar:
+   *   `(max-width: 640px) 44vw, (max-width: 992px) 28vw, 13vw`
+   *
+   * Full-width store grid (no sidebar):
+   *   `(max-width: 576px) 50vw, (max-width: 992px) 33vw, 17vw`
+   */
+  sizes?: string
 }
+
 
 /**
  * Metadata for each variant — consumed by the admin picker UI and the

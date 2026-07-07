@@ -18,6 +18,7 @@ export default function MinimalCard({ productPath,
   defaultVariantId,
   thumbnailAlt,
   priority,
+  sizes,
 }: ProductCardProps) {
   const isUpcoming = isProductUpcoming(product)
   return (
@@ -48,6 +49,7 @@ export default function MinimalCard({ productPath,
             aspectClass={aspectClass}
             alt={thumbnailAlt}
             priority={priority}
+                sizes={sizes}
             data-testid="product-wrapper"
           />
         </LocalizedClientLink>

@@ -245,7 +245,10 @@ const ImageGallery = ({
                     alt={altFor(active.url, activeIndex)}
                     fill
                     priority={priority && activeIndex === 0}
-                    sizes="50vw"
+                    // Desktop PDP: gallery is the left col of a 1.15:1 grid.
+                    // At 1322px container it's ~700px wide → roughly 53vw, but
+                    // on large screens the container caps so ~40vw is safer.
+                    sizes="(min-width: 1024px) 40vw, 50vw"
                     quality={80}
                     className={`object-cover ${isZooming ? "" : "transition-all duration-300 ease-in-out"}`}
                     style={isZooming ? {
@@ -363,8 +366,10 @@ const ImageGallery = ({
                           : altFor(item.url, i)
                       }
                       fill
-                      sizes="80px"
-                      quality={85}
+                      // Thumbnails: w-10 (40px) on mobile, md:w-16 (64px) on desktop.
+                      // Use a bit more than actual to account for high-DPR screens.
+                      sizes="(min-width: 768px) 64px, 40px"
+                      quality={70}
                       className="object-cover"
                     />
                   ) : (

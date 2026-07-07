@@ -92,10 +92,18 @@ export default async function ProductRail({
                 region={region}
                 aspectClass={aspectClass}
                 priority={index < 5}
+                // Homepage has a brands sidebar (68px mobile / 110px desktop).
+                // The product grid takes `flex-1` of the remaining space.
+                // Grid cols: 2 (mobile) → 3 (xsmall≥390) → 4 (small≥640)
+                //            → 6 (medium≥768) → 8 (large≥1024)
+                // Sidebar widths: ~68px mobile, ~110px small+, ~110px lg+
+                // col widths (approx): 44vw → 28vw → 22vw → 15vw → 11vw
+                sizes="(max-width: 390px) 44vw, (max-width: 640px) 28vw, (max-width: 768px) 22vw, (max-width: 1024px) 15vw, 11vw"
               />
             </li>
           ))}
         </ul>
+
 
         {/* "View All" — bottom-right, after the last product. */}
         <div className="flex justify-end mt-4 sm:mt-5">

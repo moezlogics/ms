@@ -508,9 +508,40 @@ const ProductTemplate = async ({
 
   return (
     <>
-      {lcpImageUrl && (
-        <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" />
-      )}
+      {lcpImageUrl && (() => {
+        // Build the same srcset the <ProductLcpImage> component uses so the
+        // browser treats the preloaded resource as the SAME as the <img>'s
+        // src — otherwise it fetches them as two separate resources (one for
+        // the preload, one for the img). imagesrcset + imagesizes is the
+        // correct way to preload responsive images per web.dev/preload-critical-assets.
+        const isOptimizable =
+          !lcpImageUrl.startsWith("data:") &&
+          (lcpImageUrl.startsWith("/") ||
+            lcpImageUrl.startsWith("https://cdn.mobilestore.pk") ||
+            lcpImageUrl.startsWith("http://localhost"))
+
+        const imgSrcSet = isOptimizable
+          ? [640, 828, 1080]
+              .map((w) => {
+                const p = new URLSearchParams({ url: lcpImageUrl, w: String(w), q: "75" })
+                return `/_next/image?${p.toString()} ${w}w`
+              })
+              .join(", ")
+          : undefined
+
+        return (
+          <link
+            rel="preload"
+            as="image"
+            href={lcpImageUrl}
+            // @ts-expect-error — imagesrcset / imagesizes are valid but not yet in React's types
+            imagesrcset={imgSrcSet}
+            imagesizes="(min-width: 1024px) 40vw, 50vw"
+            fetchPriority="high"
+          />
+        )
+      })()}
+
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger

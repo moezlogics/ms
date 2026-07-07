@@ -105,6 +105,13 @@ export default function HeroSlider({ banners, intervalMs = 5000 }: Props) {
       >
         {banners.map((b, i) => {
           const active = i === index
+          // Only the first slide's image(s) are eager/priority — subsequent
+          // slides load lazily so they don't steal bandwidth from the LCP
+          // element (the product cards below the fold on the homepage, or the
+          // hero itself when it IS the LCP candidate).
+          // `priority` also emits a <link rel="preload"> in <head>, which we
+          // only want for the initial slide.
+          const isFirst = i === 0
 
           const imageBlock = (
             <>
@@ -113,9 +120,13 @@ export default function HeroSlider({ banners, intervalMs = 5000 }: Props) {
                 src={b.image_url}
                 alt={b.title || "Promotional banner"}
                 fill
-                priority={i === 0}
+                priority={isFirst}
+                loading={isFirst ? undefined : "lazy"}
                 quality={85}
-                sizes="100vw"
+                // Banner card is max-w-[1600px] inside a padded wrapper.
+                // On very large screens it won't fill 100vw — 95vw is a closer
+                // upper bound, which saves a small amount on huge retina monitors.
+                sizes="(min-width: 1601px) 1600px, 95vw"
                 className={`object-cover transition-transform duration-[8000ms] ease-linear pointer-events-none select-none ${
                   active ? "scale-105" : "scale-100"
                 } ${b.image_url_mobile ? "hidden sm:block" : ""}`}
@@ -127,13 +138,15 @@ export default function HeroSlider({ banners, intervalMs = 5000 }: Props) {
                   src={b.image_url_mobile}
                   alt={b.title || "Promotional banner"}
                   fill
-                  priority={i === 0}
+                  priority={isFirst}
+                  loading={isFirst ? undefined : "lazy"}
                   quality={85}
-                  sizes="100vw"
+                  sizes="95vw"
                   className="object-cover sm:hidden pointer-events-none select-none"
                   draggable={false}
                 />
               )}
+
 
               {/* Premium Glassmorphism Text Card overlay */}
               {(b.title || b.subtitle || b.cta_label) && (
