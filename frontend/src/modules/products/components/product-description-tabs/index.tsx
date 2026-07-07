@@ -7,6 +7,9 @@ import {
   SpecTemplate,
   buildSpecGroupsFromTemplate,
 } from "@lib/util/spec-template"
+import dynamic from "next/dynamic"
+
+const DynamicProductReviews = dynamic(() => import("@modules/products/components/product-reviews"), { ssr: false })
 
 type Props = {
   /** Legacy single rich-description (back-compat). */
@@ -29,7 +32,9 @@ type Props = {
    */
   inTheBox?: any
   /** ProductReviews slot — passed as children to keep server/client clean. */
-  reviewsSlot: React.ReactNode
+  reviewsSlot?: React.ReactNode
+  productId?: string
+  productTitle?: string
   /** Number to render in the Reviews nav badge. */
   reviewCount?: number
   /**
@@ -68,6 +73,8 @@ export default function ProductDescriptionTabs({
   similarBudgetSlot,
   similarSpecsSlot,
   sameBrandSlot,
+  productId,
+  productTitle,
 }: Props) {
   const englishHtml = (richDescriptionEn ?? richDescription)?.trim() || null
   const urduHtml = richDescriptionUr?.trim() || null
@@ -392,7 +399,9 @@ export default function ProductDescriptionTabs({
               </span>
             )}
           </h2>
-          {reviewsSlot}
+          {reviewsSlot || (productId && (
+            <DynamicProductReviews productId={productId} productTitle={productTitle} />
+          ))}
         </div>
       </div>
     </div>

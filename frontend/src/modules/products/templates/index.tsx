@@ -24,14 +24,9 @@ import { canonicalUrl } from "@lib/util/seo-url"
 import dynamic from "next/dynamic"
 
 const FrequentlyBoughtTogether = dynamic(
-  () => import("@modules/products/components/frequently-bought-together"),
-  { ssr: false }
+  () => import("@modules/products/components/frequently-bought-together")
 )
 import { slimProductForClient } from "@lib/util/slim-product"
-const ProductReviews = dynamic(
-  () => import("@modules/products/components/product-reviews"),
-  { ssr: false }
-)
 import ProductDescriptionTabs from "@modules/products/components/product-description-tabs"
 import ProductViewTracker from "@modules/analytics/product-view-tracker"
 import BundleCard from "@modules/products/components/bundle-card"
@@ -661,9 +656,8 @@ const ProductTemplate = async ({
           inTheBox={(product.metadata as any)?.in_the_box}
           reviewCount={stats?.reviewCount}
           template={specTemplateResult?.template ?? null}
-          reviewsSlot={
-            <ProductReviews productId={product.id} productTitle={product.title} />
-          }
+          productId={product.id}
+          productTitle={product.title}
           similarBudgetSlot={renderInlineSection("Similar Price", similarBudget)}
           similarSpecsSlot={renderInlineSection("Similar Specs", similarSpecs)}
           sameBrandSlot={renderInlineSection(`More from ${brand?.name || "Brand"}`, sameBrand)}
