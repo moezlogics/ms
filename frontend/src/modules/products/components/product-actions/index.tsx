@@ -58,8 +58,17 @@ export default function ProductActions({
     const variants = product.variants ?? []
     if (variants.length === 0) return {}
 
-    const first = variants[0]
-    return optionsAsKeymap(first.options) ?? {}
+    if (variants.length <= 1) {
+      const first = variants[0]
+      return optionsAsKeymap(first.options) ?? {}
+    }
+
+    // Default: no options are selected initially (so URL remains clean without v_id)
+    const emptyMap: Record<string, string | undefined> = {}
+    product.options?.forEach((opt) => {
+      emptyMap[opt.id] = undefined
+    })
+    return emptyMap
   })
   const [qty, setQty] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
@@ -109,12 +118,7 @@ export default function ProductActions({
     const urlVId = params.get("v_id")
 
     if (!urlVId) {
-      if (selectedVariant?.id && (product.variants?.length ?? 0) > 1) {
-        params.set("v_id", selectedVariant.id)
-        const qs = params.toString()
-        window.history.replaceState(null, "", `${pathname}?${qs}`)
-        window.dispatchEvent(new CustomEvent("variant-change", { detail: selectedVariant.id }))
-      }
+      // No v_id in URL: do nothing so options stay unselected and URL stays clean.
       return
     }
 
@@ -407,7 +411,7 @@ export default function ProductActions({
             </>
           ) : (
             <>
-              {!selectedVariant && !options
+              {!selectedVariant
                 ? "Select variant"
                 : preorder.isPreorder
                 ? "Pre-order Now"
