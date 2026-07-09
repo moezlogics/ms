@@ -234,6 +234,16 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: "/searchapps.php",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/app/searchapps.php",
+        destination: "/",
+        permanent: true,
+      },
+      {
         source: "/:country([a-z]{2})/search",
         destination: "/:country",
         permanent: true,
