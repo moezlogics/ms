@@ -59,8 +59,10 @@ export async function generateMetadata(): Promise<Metadata> {
       .filter(Boolean)
   }
 
-  if (settings.site_favicon_url?.trim()) {
-    meta.icons = { icon: settings.site_favicon_url }
+  meta.icons = {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
   }
 
   // Default OpenGraph for Pakistan-focused storefront: English primary,
